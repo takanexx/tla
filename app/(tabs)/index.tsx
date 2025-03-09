@@ -1,74 +1,147 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { StyleSheet, View, Text, Dimensions, ScrollView, SafeAreaView } from 'react-native';
+import { PieChart, ProgressChart } from 'react-native-chart-kit';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+
+const screenWidth = Dimensions.get('window').width;
+
+const data = [
+  { name: '睡眠', population: 8, color: 'rgba(0, 0, 255, 0.6)', legendFontColor: '#7F7F7F', legendFontSize: 15 },
+  { name: '仕事', population: 8, color: 'rgba(0, 0, 255, 0.8)', legendFontColor: '#7F7F7F', legendFontSize: 15 },
+  { name: '勉強', population: 2, color: 'rgba(255, 0, 0, 0.6)', legendFontColor: '#7F7F7F', legendFontSize: 15 },
+  { name: 'その他', population: 6, color: 'rgba(255, 0, 0, 0.8)', legendFontColor: '#7F7F7F', legendFontSize: 15 },
+];
+
+const chartConfig = {
+  backgroundGradientFrom: '#1E2923',
+  backgroundGradientFromOpacity: 0,
+  backgroundGradientTo: '#08130D',
+  backgroundGradientToOpacity: 0.5,
+  color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
+  strokeWidth: 2, // optional, default 3
+  barPercentage: 0.5,
+  useShadowColorFromDataset: false, // optional
+};
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <ScrollView contentContainerStyle={styles.container}>
+      <SafeAreaView>
+        <Text style={styles.title}>TLA</Text>
+      </SafeAreaView>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>アセット</Text>
+        <PieChart
+          data={data}
+          width={screenWidth - 40}
+          height={250}
+          chartConfig={chartConfig}
+          accessor="population"
+          backgroundColor="transparent"
+          paddingLeft="15"
+          absolute
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+      <View style={{marginTop: 20, flexDirection: 'row', justifyContent: 'space-between'}}>
+        <View style={{...styles.card, width: screenWidth / 2 - 30}}>
+          <Text style={styles.cardTitle}>可処分時間</Text>
+          <ProgressChart
+            data={{
+              data: [0.13],
+            }}
+            width={screenWidth / 2 - 40}
+            height={120}
+            chartConfig={{
+              backgroundColor: 'white',
+              backgroundGradientFrom: "white",
+              backgroundGradientTo: "white",
+              color: (opacity = 1) => `rgba(26, 100, 146, ${opacity})`,
+            }}
+            hideLegend={true}
+            hasLegend={false}
+          />
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Text style={{fontWeight: 'bold', color: 'gray'}}>3時間20分</Text>
+            <Text style={{fontWeight: 'bold', color: 'gray'}}>13%</Text>
+          </View>
+        </View>
+        <View style={{...styles.card, width: screenWidth / 2 - 30}}>
+          <Text style={styles.cardTitle}>稼働率</Text>
+          <ProgressChart
+            data={{
+              data: [0.78],
+            }}
+            width={screenWidth / 2 - 40}
+            height={120}
+            chartConfig={{
+              backgroundColor: 'white',
+              backgroundGradientFrom: "white",
+              backgroundGradientTo: "white",
+              color: (opacity = 1) => `rgba(26, 50, 146, ${opacity})`,
+            }}
+            hideLegend={true}
+            hasLegend={false}
+          />
+          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+            <Text style={{fontWeight: 'bold', color: 'gray'}}>2時間50分</Text>
+            <Text style={{fontWeight: 'bold', color: 'gray'}}>78%</Text>
+          </View>
+        </View>
+      </View>
+      <Text style={styles.text}>その内、あなたが勉強に投資した時間は...</Text>
+      <View style={styles.circleContainer}>
+        <View style={styles.circle}></View>
+        <Text style={styles.timeText}>○○分です。</Text>
+      </View>
+      <Text style={styles.text}>今日のあなたのすべての時間の労働効率は</Text>
+      <View style={styles.circleContainer}>
+        <View style={styles.circle}></View>
+        <Text style={styles.percentText}>○○%</Text>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    padding: 20,
+    minHeight: '110%',
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 10,
+  },
+  cardTitle: {
+    fontWeight: 'bold', fontSize: 18, paddingHorizontal: 5
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  text: {
+    fontSize: 18,
+    marginVertical: 10,
+  },
+  circleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginVertical: 10,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  circle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: 'red',
+    marginRight: 10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  timeText: {
+    fontSize: 18,
+    color: 'red',
+  },
+  percentText: {
+    fontSize: 18,
+    color: 'black',
   },
 });
