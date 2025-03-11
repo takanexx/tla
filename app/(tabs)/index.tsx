@@ -1,14 +1,37 @@
-import { StyleSheet, View, Text, Dimensions, ScrollView, SafeAreaView } from 'react-native';
+import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PieChart, ProgressChart } from 'react-native-chart-kit';
-
 
 const screenWidth = Dimensions.get('window').width;
 
 const data = [
-  { name: '睡眠', population: 8, color: 'rgba(0, 0, 255, 0.6)', legendFontColor: '#7F7F7F', legendFontSize: 15 },
-  { name: '仕事', population: 8, color: 'rgba(0, 0, 255, 0.8)', legendFontColor: '#7F7F7F', legendFontSize: 15 },
-  { name: '勉強', population: 2, color: 'rgba(255, 0, 0, 0.6)', legendFontColor: '#7F7F7F', legendFontSize: 15 },
-  { name: 'その他', population: 6, color: 'rgba(255, 0, 0, 0.8)', legendFontColor: '#7F7F7F', legendFontSize: 15 },
+  {
+    name: '睡眠',
+    population: 8,
+    color: 'rgba(0, 0, 255, 0.6)',
+    legendFontColor: '#7F7F7F',
+    legendFontSize: 15,
+  },
+  {
+    name: '仕事',
+    population: 8,
+    color: 'rgba(0, 0, 255, 0.8)',
+    legendFontColor: '#7F7F7F',
+    legendFontSize: 15,
+  },
+  {
+    name: '勉強',
+    population: 2,
+    color: 'rgba(255, 0, 0, 0.6)',
+    legendFontColor: '#7F7F7F',
+    legendFontSize: 15,
+  },
+  {
+    name: 'その他',
+    population: 6,
+    color: 'rgba(255, 0, 0, 0.8)',
+    legendFontColor: '#7F7F7F',
+    legendFontSize: 15,
+  },
 ];
 
 const chartConfig = {
@@ -41,8 +64,8 @@ export default function HomeScreen() {
           absolute
         />
       </View>
-      <View style={{marginTop: 20, flexDirection: 'row', justifyContent: 'space-between'}}>
-        <View style={{...styles.card, width: screenWidth / 2 - 30}}>
+      <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
           <Text style={styles.cardTitle}>可処分時間</Text>
           <ProgressChart
             data={{
@@ -52,19 +75,19 @@ export default function HomeScreen() {
             height={120}
             chartConfig={{
               backgroundColor: 'white',
-              backgroundGradientFrom: "white",
-              backgroundGradientTo: "white",
+              backgroundGradientFrom: 'white',
+              backgroundGradientTo: 'white',
               color: (opacity = 1) => `rgba(26, 100, 146, ${opacity})`,
             }}
             hideLegend={true}
             hasLegend={false}
           />
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <Text style={{fontWeight: 'bold', color: 'gray'}}>3時間20分</Text>
-            <Text style={{fontWeight: 'bold', color: 'gray'}}>13%</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ fontWeight: 'bold', color: 'gray' }}>3時間20分</Text>
+            <Text style={{ fontWeight: 'bold', color: 'gray' }}>13%</Text>
           </View>
         </View>
-        <View style={{...styles.card, width: screenWidth / 2 - 30}}>
+        <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
           <Text style={styles.cardTitle}>稼働率</Text>
           <ProgressChart
             data={{
@@ -74,28 +97,18 @@ export default function HomeScreen() {
             height={120}
             chartConfig={{
               backgroundColor: 'white',
-              backgroundGradientFrom: "white",
-              backgroundGradientTo: "white",
+              backgroundGradientFrom: 'white',
+              backgroundGradientTo: 'white',
               color: (opacity = 1) => `rgba(26, 50, 146, ${opacity})`,
             }}
             hideLegend={true}
             hasLegend={false}
           />
-          <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <Text style={{fontWeight: 'bold', color: 'gray'}}>2時間50分</Text>
-            <Text style={{fontWeight: 'bold', color: 'gray'}}>78%</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={{ fontWeight: 'bold', color: 'gray' }}>2時間50分</Text>
+            <Text style={{ fontWeight: 'bold', color: 'gray' }}>78%</Text>
           </View>
         </View>
-      </View>
-      <Text style={styles.text}>その内、あなたが勉強に投資した時間は...</Text>
-      <View style={styles.circleContainer}>
-        <View style={styles.circle}></View>
-        <Text style={styles.timeText}>○○分です。</Text>
-      </View>
-      <Text style={styles.text}>今日のあなたのすべての時間の労働効率は</Text>
-      <View style={styles.circleContainer}>
-        <View style={styles.circle}></View>
-        <Text style={styles.percentText}>○○%</Text>
       </View>
     </ScrollView>
   );
@@ -104,7 +117,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    minHeight: '110%',
+    // minHeight: '110%',
   },
   card: {
     backgroundColor: 'white',
@@ -112,7 +125,9 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   cardTitle: {
-    fontWeight: 'bold', fontSize: 18, paddingHorizontal: 5
+    fontWeight: 'bold',
+    fontSize: 18,
+    paddingHorizontal: 5,
   },
   title: {
     fontSize: 24,

@@ -25,19 +25,35 @@ export default function TabLayout() {
           },
           default: {},
         }),
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ focused, color }) => <Ionicons size={28} name={focused ? 'home' : 'home-outline'} color={color} />,
+          title: 'ホーム',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons size={28} name={focused ? 'home' : 'home-outline'} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="schedule"
         options={{
-          title: 'Setting',
-          tabBarIcon: ({ focused, color }) => <Ionicons size={28} name={focused ? 'settings' : 'settings-outline'} color={color} />,
+          headerShown: true,
+          title: 'スケジュール',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons size={28} name={focused ? 'pie-chart' : 'pie-chart-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="setting"
+        options={{
+          headerShown: true,
+          title: '設定',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons size={28} name={focused ? 'settings' : 'settings-outline'} color={color} />
+          ),
         }}
       />
     </Tabs>
