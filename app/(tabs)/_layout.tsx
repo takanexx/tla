@@ -47,6 +47,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="my-graph"
+        options={{
+          title: 'グラフ',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons size={28} name={focused ? 'podium' : 'podium-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="setting"
         options={{
           headerShown: true,

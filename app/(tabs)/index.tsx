@@ -1,5 +1,6 @@
 import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { PieChart, ProgressChart } from 'react-native-chart-kit';
+import { PieChart } from 'react-native-chart-kit';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -67,21 +68,25 @@ export default function HomeScreen() {
       <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
         <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
           <Text style={styles.cardTitle}>可処分時間</Text>
-          <ProgressChart
-            data={{
-              data: [0.13],
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 10,
             }}
-            width={screenWidth / 2 - 40}
-            height={120}
-            chartConfig={{
-              backgroundColor: 'white',
-              backgroundGradientFrom: 'white',
-              backgroundGradientTo: 'white',
-              color: (opacity = 1) => `rgba(26, 100, 146, ${opacity})`,
-            }}
-            hideLegend={true}
-            hasLegend={false}
-          />
+          >
+            <AnimatedCircularProgress
+              size={screenWidth / 2 - 70}
+              width={20}
+              rotation={0}
+              fill={13}
+              tintColor="#00e0ff"
+              backgroundColor="#3d5875"
+            >
+              {fill => <Text style={styles.percentText}>{Math.trunc(fill)}%</Text>}
+            </AnimatedCircularProgress>
+          </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={{ fontWeight: 'bold', color: 'gray' }}>3時間20分</Text>
             <Text style={{ fontWeight: 'bold', color: 'gray' }}>13%</Text>
@@ -89,21 +94,25 @@ export default function HomeScreen() {
         </View>
         <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
           <Text style={styles.cardTitle}>稼働率</Text>
-          <ProgressChart
-            data={{
-              data: [0.78],
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 10,
             }}
-            width={screenWidth / 2 - 40}
-            height={120}
-            chartConfig={{
-              backgroundColor: 'white',
-              backgroundGradientFrom: 'white',
-              backgroundGradientTo: 'white',
-              color: (opacity = 1) => `rgba(26, 50, 146, ${opacity})`,
-            }}
-            hideLegend={true}
-            hasLegend={false}
-          />
+          >
+            <AnimatedCircularProgress
+              size={screenWidth / 2 - 70}
+              width={20}
+              rotation={0}
+              fill={78}
+              tintColor="#00e0ff"
+              backgroundColor="#3d5875"
+            >
+              {fill => <Text style={styles.percentText}>{Math.trunc(fill)}%</Text>}
+            </AnimatedCircularProgress>
+          </View>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={{ fontWeight: 'bold', color: 'gray' }}>2時間50分</Text>
             <Text style={{ fontWeight: 'bold', color: 'gray' }}>78%</Text>
