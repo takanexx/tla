@@ -1,11 +1,39 @@
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Fragment, useState } from 'react';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { CalendarList } from 'react-native-calendars';
 
 export default function ScheduleScreen() {
+  const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
+
   return (
     <>
+      <SafeAreaView>
+        <Fragment>
+          <CalendarList
+            theme={{
+              'stylesheet.calendar.header': {
+                dayTextAtIndex0: {
+                  color: 'red',
+                },
+                dayTextAtIndex6: {
+                  color: 'blue',
+                },
+              },
+            }}
+            pagingEnabled={true}
+            horizontal={true}
+            onDayPress={day => {
+              setSelected(day.dateString);
+            }}
+            markedDates={{
+              [selected]: { selected: true, disableTouchEvent: true },
+            }}
+          />
+        </Fragment>
+      </SafeAreaView>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定スケジュール</Text>
+        {/* <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定スケジュール</Text>
         <View style={styles.card}>
           <View style={styles.sectionListItemView}>
             <Text style={{ fontSize: 16 }}>睡眠</Text>
@@ -15,10 +43,10 @@ export default function ScheduleScreen() {
             <Text style={{ fontSize: 16 }}>仕事</Text>
             <Text style={{ fontSize: 16, fontWeight: 'bold' }}>9時〜18時</Text>
           </View>
-        </View>
+        </View> */}
 
-        <View style={{ marginTop: 20 }}>
-          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>投資スケジュール</Text>
+        <View style={{}}>
+          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>稼働したタスク</Text>
           <View style={styles.card}>
             <View style={styles.sectionListItemView}>
               <Text style={{ fontSize: 16 }}>勉強</Text>
@@ -39,7 +67,7 @@ export default function ScheduleScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    minHeight: '100%',
+    // minHeight: '100%',
   },
   card: {
     backgroundColor: 'white',

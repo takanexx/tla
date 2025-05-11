@@ -1,3 +1,4 @@
+import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -48,85 +49,113 @@ const chartConfig = {
 
 export default function HomeScreen() {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <SafeAreaView>
-        <Text style={styles.title}>TLA</Text>
-      </SafeAreaView>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>アセット</Text>
-        <PieChart
-          data={data}
-          width={screenWidth - 40}
-          height={250}
-          chartConfig={chartConfig}
-          accessor="population"
-          backgroundColor="transparent"
-          paddingLeft="15"
-          absolute
-        />
-      </View>
-      <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
-        <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
-          <Text style={styles.cardTitle}>可処分時間</Text>
+    <>
+      <ScrollView contentContainerStyle={styles.container}>
+        <SafeAreaView>
+          <Text style={styles.title}>TLA</Text>
+        </SafeAreaView>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>3/28 アセット</Text>
+          <PieChart
+            data={data}
+            width={screenWidth - 40}
+            height={250}
+            chartConfig={chartConfig}
+            accessor="population"
+            backgroundColor="transparent"
+            paddingLeft="15"
+            absolute
+          />
+        </View>
+        <View style={{ ...styles.card, marginTop: 20 }}>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
-              padding: 10,
+              justifyContent: 'space-between',
+              marginBottom: 10,
             }}
           >
-            <AnimatedCircularProgress
-              size={screenWidth / 2 - 70}
-              width={20}
-              rotation={0}
-              fill={13}
-              tintColor="#00e0ff"
-              backgroundColor="#3d5875"
-            >
-              {fill => <Text style={styles.percentText}>{Math.trunc(fill)}%</Text>}
-            </AnimatedCircularProgress>
+            <Text style={{ ...styles.cardTitle }}>今日の稼働</Text>
+            <Text style={styles.text}>合計 5時間</Text>
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ fontWeight: 'bold', color: 'gray' }}>3時間20分</Text>
-            <Text style={{ fontWeight: 'bold', color: 'gray' }}>13%</Text>
+          <View style={styles.sectionListItemView}>
+            <Text style={{ fontSize: 16 }}>勉強</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>6時〜7時</Text>
           </View>
-        </View>
-        <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
-          <Text style={styles.cardTitle}>稼働率</Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 10,
-            }}
-          >
-            <AnimatedCircularProgress
-              size={screenWidth / 2 - 70}
-              width={20}
-              rotation={0}
-              fill={78}
-              tintColor="#00e0ff"
-              backgroundColor="#3d5875"
-            >
-              {fill => <Text style={styles.percentText}>{Math.trunc(fill)}%</Text>}
-            </AnimatedCircularProgress>
+          <View style={styles.sectionListItemView}>
+            <Text style={{ fontSize: 16 }}>勉強</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>15時〜17時</Text>
           </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={{ fontWeight: 'bold', color: 'gray' }}>2時間50分</Text>
-            <Text style={{ fontWeight: 'bold', color: 'gray' }}>78%</Text>
+          <View style={styles.sectionListItemView}>
+            <Text style={{ fontSize: 16 }}>勉強</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>20時〜22時</Text>
           </View>
         </View>
-      </View>
-    </ScrollView>
+        <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
+            <Text style={styles.cardTitle}>可処分時間割合</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 10,
+              }}
+            >
+              <AnimatedCircularProgress
+                size={screenWidth / 2 - 70}
+                width={20}
+                rotation={0}
+                fill={13}
+                tintColor="#00e0ff"
+                backgroundColor="#3d5875"
+              >
+                {fill => <Text style={styles.percentText}>{Math.trunc(fill)}%</Text>}
+              </AnimatedCircularProgress>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={{ fontWeight: 'bold', color: 'gray' }}>3時間20分</Text>
+              <Text style={{ fontWeight: 'bold', color: 'gray' }}>13%</Text>
+            </View>
+          </View>
+          <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
+            <Text style={styles.cardTitle}>稼働時間割合</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 10,
+              }}
+            >
+              <AnimatedCircularProgress
+                size={screenWidth / 2 - 70}
+                width={20}
+                rotation={0}
+                fill={78}
+                tintColor="#00e0ff"
+                backgroundColor="#3d5875"
+              >
+                {fill => <Text style={styles.percentText}>{Math.trunc(fill)}%</Text>}
+              </AnimatedCircularProgress>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={{ fontWeight: 'bold', color: 'gray' }}>2時間50分</Text>
+              <Text style={{ fontWeight: 'bold', color: 'gray' }}>78%</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+      <FloatingActionButton />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    // minHeight: '110%',
+    minHeight: '110%',
   },
   card: {
     backgroundColor: 'white',
@@ -167,5 +196,14 @@ const styles = StyleSheet.create({
   percentText: {
     fontSize: 18,
     color: 'black',
+  },
+  sectionListItemView: {
+    paddingHorizontal: 5,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'lightgray',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });

@@ -42,6 +42,28 @@ export default function MyGraphScreen() {
           style={styles.chart}
         />
       </View>
+
+      <View style={{ marginTop: 20 }}>
+        <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>結果</Text>
+        <View style={styles.card}>
+          <View style={styles.sectionListItemView}>
+            <Text style={{ fontSize: 16 }}>1月</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>20点</Text>
+          </View>
+          <View style={styles.sectionListItemView}>
+            <Text style={{ fontSize: 16 }}>3月</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>40点</Text>
+          </View>
+          <View style={styles.sectionListItemView}>
+            <Text style={{ fontSize: 16 }}>4月</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>30点</Text>
+          </View>
+          <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
+            <Text style={{ fontSize: 16 }}>7月</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>80点</Text>
+          </View>
+        </View>
+      </View>
     </ScrollView>
   );
 }
@@ -63,5 +85,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 15,
     padding: 10,
+  },
+  sectionListItemView: {
+    paddingHorizontal: 5,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'lightgray',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });

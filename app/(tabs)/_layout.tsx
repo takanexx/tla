@@ -39,10 +39,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="schedule"
         options={{
-          headerShown: true,
-          title: 'スケジュール',
+          // headerShown: true,
+          title: 'カレンダー',
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons size={28} name={focused ? 'pie-chart' : 'pie-chart-outline'} color={color} />
+            <Ionicons size={28} name={focused ? 'calendar' : 'calendar-outline'} color={color} />
           ),
         }}
       />
@@ -52,6 +52,15 @@ export default function TabLayout() {
           title: 'グラフ',
           tabBarIcon: ({ focused, color }) => (
             <Ionicons size={28} name={focused ? 'podium' : 'podium-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="timeline"
+        options={{
+          title: 'タイムライン',
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons size={28} name={focused ? 'compass' : 'compass-outline'} color={color} />
           ),
         }}
       />
