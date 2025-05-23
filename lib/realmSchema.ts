@@ -88,6 +88,13 @@ export class ExamResult extends Realm.Object<ExamResult> {
   score!: number;
   date!: Date;
 
+  static generate(params: { score?: number; date?: Date } = {}) {
+    return {
+      score: params.score,
+      date: params.date,
+    };
+  }
+
   static schema: Realm.ObjectSchema = {
     name: 'ExamResult',
     embedded: true,
@@ -102,7 +109,7 @@ export class Exam extends Realm.Object<Exam> {
   _id!: Realm.BSON.ObjectId;
   userId!: string;
   title!: string;
-  results!: ExamResult[];
+  results!: Realm.List<ExamResult>;
   createdAt!: Date;
 
   static generate(params: { userId?: string; title?: string; results?: Array<ExamResult> } = {}) {
@@ -110,7 +117,7 @@ export class Exam extends Realm.Object<Exam> {
       _id: new Realm.BSON.ObjectId(),
       userId: params.userId,
       title: params.title,
-      results: [],
+      results: params.results,
       createdAt: new Date(),
     };
   }

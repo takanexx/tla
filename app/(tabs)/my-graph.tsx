@@ -1,5 +1,5 @@
 import { Colors } from '@/constants/Colors';
-import { Exam } from '@/lib/realmSchema';
+import { Exam, ExamResult } from '@/lib/realmSchema';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQuery, useRealm } from '@realm/react';
@@ -48,23 +48,40 @@ export default function MyGraphScreen() {
   const [visibleEditModal, setVisibleEditModal] = useState(false);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(new Date());
+  const [score, setScore] = useState<number | null>(null);
   const [editData, setEditData] = useState({
     title: '',
     date: new Date(),
   });
+  console.log('exam', exam);
 
   const onCreateExam = () => {
-    realm.write(() => {
-      const newExam = realm.create(
+    let examResults: ExamResult[] = [];
+    // 試験結果がある場合は、試験結果を作成
+    if (date && score) {
+      const examResult: ExamResult = ExamResult.generate({
+        date: date,
+        score: score,
+      }) as unknown as ExamResult;
+      console.log(examResult);
+      examResults.push(examResult);
+      console.log(examResults);
+    }
+
+    // 試験データを作成（試験結果を含む）
+    const newExam = realm.write(() => {
+      return realm.create(
         'Exam',
-        Exam.generate({ userId: '', title: title }),
+        Exam.generate({ userId: '', title: title, results: examResults }),
       ) as unknown as Exam;
-      setExam(newExam);
     });
+    setExam(newExam);
 
     // タイトルを空にしてモーダルを閉じる
     setTitle('');
     setVisible(false);
+    setDate(new Date());
+    setScore(null);
   };
 
   if (!exam) {
@@ -146,6 +163,7 @@ export default function MyGraphScreen() {
                     padding: 8,
                     fontSize: 16,
                   }}
+                  onChangeText={text => setScore(Number(text))}
                 />
               </View>
             </View>
@@ -197,22 +215,32 @@ export default function MyGraphScreen() {
       <View style={{ marginTop: 20 }}>
         <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>結果</Text>
         <View style={styles.card}>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>1月</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>20点</Text>
-          </View>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>3月</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>40点</Text>
-          </View>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>4月</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>30点</Text>
-          </View>
-          <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
-            <Text style={{ fontSize: 16 }}>7月</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>80点</Text>
-          </View>
+          {exam?.results.length === 0 ? (
+            // 試験結果がまだない場合
+            <View
+              style={{
+                ...styles.sectionListItemView,
+                borderBottomWidth: 0,
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 16 }}>試験結果はまだありません</Text>
+            </View>
+          ) : (
+            // 試験結果がある場合
+            exam?.results.map((result, index) => (
+              <View
+                key={index}
+                style={{
+                  ...styles.sectionListItemView,
+                  borderBottomWidth: exam?.results.length === index + 1 ? 0 : 1,
+                }}
+              >
+                <Text style={{ fontSize: 16 }}>{result.date.toLocaleDateString('ja-JP')}</Text>
+                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{result.score}点</Text>
+              </View>
+            ))
+          )}
         </View>
       </View>
       <Modal
