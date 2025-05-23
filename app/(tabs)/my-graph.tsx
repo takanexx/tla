@@ -14,6 +14,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
@@ -43,8 +44,18 @@ const chartConfig = {
 
 export default function MyGraphScreen() {
   const realm = useRealm();
-  const [exam, setExam] = useState<Exam | null>(useQuery(Exam)[0] ?? null);
+  const exam = useQuery(Exam)[0] ?? null;
+  const [chartData, setChartData] = useState<Object | any>({
+    labels: exam?.results.sorted('date').map(result => result.date.toLocaleDateString('ja-JP')),
+    datasets: [
+      {
+        data: exam?.results.sorted('date').map(result => result.score),
+        strokeWidth: 2,
+      },
+    ],
+  });
   const [visible, setVisible] = useState(false);
+  const [visibleAddResultModal, setVisibleAddResultModal] = useState(false);
   const [visibleEditModal, setVisibleEditModal] = useState(false);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(new Date());
@@ -53,29 +64,23 @@ export default function MyGraphScreen() {
     title: '',
     date: new Date(),
   });
-  console.log('exam', exam);
 
+  // 試験データの作成処理
   const onCreateExam = () => {
-    let examResults: ExamResult[] = [];
+    const examResults: ExamResult[] = [];
     // 試験結果がある場合は、試験結果を作成
     if (date && score) {
       const examResult: ExamResult = ExamResult.generate({
         date: date,
         score: score,
       }) as unknown as ExamResult;
-      console.log(examResult);
       examResults.push(examResult);
-      console.log(examResults);
     }
 
     // 試験データを作成（試験結果を含む）
-    const newExam = realm.write(() => {
-      return realm.create(
-        'Exam',
-        Exam.generate({ userId: '', title: title, results: examResults }),
-      ) as unknown as Exam;
+    realm.write(() => {
+      realm.create('Exam', Exam.generate({ userId: '', title: title, results: examResults }));
     });
-    setExam(newExam);
 
     // タイトルを空にしてモーダルを閉じる
     setTitle('');
@@ -84,11 +89,40 @@ export default function MyGraphScreen() {
     setScore(null);
   };
 
+  // 試験結果の追加処理
+  const onAddExamResult = () => {
+    if (score === null) return;
+
+    // 試験結果を作成し試験データに追加
+    const examResult: ExamResult = ExamResult.generate({
+      date: date,
+      score: score,
+    }) as unknown as ExamResult;
+    realm.write(() => {
+      exam?.results.push(examResult);
+    });
+
+    // チャートデータを更新
+    setChartData({
+      labels: exam?.results.sorted('date').map(result => result.date.toLocaleDateString('ja-JP')),
+      datasets: [
+        {
+          data: exam?.results.sorted('date').map(result => result.score),
+          strokeWidth: 2,
+        },
+      ],
+    });
+
+    setVisibleAddResultModal(false);
+    setDate(new Date());
+    setScore(null);
+  };
+
   if (!exam) {
     return (
       <View style={{ padding: 20 }}>
         <SafeAreaView>
-          <Text style={styles.title}>試験グラフ</Text>
+          <Text style={styles.title}>試験データ</Text>
         </SafeAreaView>
         <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 60 }}>
           <Text style={{ fontSize: 18, color: 'gray' }}>試験データがありません</Text>
@@ -192,28 +226,73 @@ export default function MyGraphScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <SafeAreaView style={{ justifyContent: 'space-between', flexDirection: 'row', zIndex: 1 }}>
-        <Text style={styles.title}>試験グラフ</Text>
+        <Text style={styles.title}>試験データ</Text>
         <TouchableOpacity onPress={() => setVisibleEditModal(true)}>
           <Ionicons name="ellipsis-vertical" size={24} color="gray" style={{ marginBottom: 10 }} />
         </TouchableOpacity>
       </SafeAreaView>
-      <View style={styles.card}>
-        <Text style={{ fontWeight: 'bold', color: 'gray', padding: 5, textAlign: 'center' }}>
-          {exam?.title}
-        </Text>
-        <LineChart
-          transparent
-          data={data}
-          width={screenWidth - 40}
-          height={220}
-          chartConfig={chartConfig}
-          bezier
-          style={styles.chart}
-        />
+
+      <View>
+        <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>最近の試験結果</Text>
+        <View style={styles.card}>
+          <View style={styles.sectionListItemView}>
+            <Text style={{ fontSize: 16 }}>試験名</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{exam?.title}</Text>
+          </View>
+          <View style={styles.sectionListItemView}>
+            <Text style={{ fontSize: 16 }}>試験日</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+              {exam?.results.length > 0
+                ? exam?.results.sorted('date', true)[0].date.toLocaleDateString('ja-JP')
+                : 'ー'}
+            </Text>
+          </View>
+          <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
+            <Text style={{ fontSize: 16 }}>点数</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+              {exam?.results.length > 0 ? `${exam?.results[0]?.score}点` : 'ー'}
+            </Text>
+          </View>
+        </View>
       </View>
 
       <View style={{ marginTop: 20 }}>
-        <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>結果</Text>
+        <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>グラフ</Text>
+        <View style={styles.card}>
+          <Text style={{ fontWeight: 'bold', color: 'gray', padding: 5, textAlign: 'center' }}>
+            {exam?.title}
+          </Text>
+          {!chartData ? (
+            <Text style={{ fontSize: 16, textAlign: 'center' }}>試験結果はまだありません</Text>
+          ) : (
+            <LineChart
+              transparent
+              fromZero
+              data={chartData}
+              width={screenWidth - 40}
+              height={220}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.chart}
+              yAxisSuffix="点"
+              formatYLabel={value => {
+                return Math.trunc(Number(value)).toString();
+              }}
+            />
+          )}
+        </View>
+      </View>
+
+      <View style={{ marginTop: 20 }}>
+        <View style={{ alignItems: 'center', flexDirection: 'row' }}>
+          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>結果一覧</Text>
+          <TouchableOpacity
+            style={{ paddingLeft: 10 }}
+            onPress={() => setVisibleAddResultModal(true)}
+          >
+            <Ionicons name="add-circle-outline" size={20} color="gray" />
+          </TouchableOpacity>
+        </View>
         <View style={styles.card}>
           {exam?.results.length === 0 ? (
             // 試験結果がまだない場合
@@ -228,7 +307,7 @@ export default function MyGraphScreen() {
             </View>
           ) : (
             // 試験結果がある場合
-            exam?.results.map((result, index) => (
+            exam?.results.sorted('date').map((result, index) => (
               <View
                 key={index}
                 style={{
@@ -243,6 +322,114 @@ export default function MyGraphScreen() {
           )}
         </View>
       </View>
+
+      {/* 試験結果追加モーダル */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={visibleAddResultModal}
+        onRequestClose={() => setVisibleAddResultModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setVisibleAddResultModal(false)}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          />
+        </TouchableWithoutFeedback>
+        <SafeAreaView
+          style={{
+            height: 'auto',
+            backgroundColor: 'white',
+            marginTop: 'auto',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            marginBottom: 40,
+          }}
+        >
+          <View style={{ alignItems: 'flex-end', padding: 10, paddingBottom: 0 }}>
+            <Ionicons
+              name="close-circle-outline"
+              size={26}
+              color="black"
+              onPress={() => setVisibleAddResultModal(false)}
+            />
+          </View>
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 30,
+              paddingVertical: 20,
+            }}
+          >
+            <View style={{ width: '100%' }}>
+              <View
+                style={{
+                  marginBottom: 20,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 16, paddingBottom: 5 }}>試験日</Text>
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  locale="ja-JP"
+                  onChange={(event, dateVal) => {
+                    if (event.type === 'dismissed') return;
+                    setDate(dateVal ?? new Date());
+                  }}
+                />
+              </View>
+
+              <View
+                style={{
+                  marginBottom: 20,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text style={{ fontSize: 16, paddingBottom: 5 }}>点数</Text>
+                <TextInput
+                  defaultValue=""
+                  keyboardType="numeric"
+                  style={{
+                    width: 120,
+                    borderColor: 'lightgray',
+                    borderWidth: 1,
+                    borderRadius: 10,
+                    padding: 8,
+                    fontSize: 16,
+                  }}
+                  onChangeText={text => setScore(Number(text))}
+                />
+              </View>
+            </View>
+            <View style={{ width: '100%' }}>
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 10,
+                  backgroundColor: Colors.light.tint,
+                  marginTop: 10,
+                }}
+                onPress={onAddExamResult}
+              >
+                <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center' }}>
+                  追加する
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
       <Modal
         animationType="slide"
         presentationStyle="pageSheet"
@@ -277,47 +464,13 @@ export default function MyGraphScreen() {
                 }}
               />
             </View>
-            <View
-              style={{
-                marginBottom: 20,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ fontSize: 16, paddingBottom: 5 }}>試験日</Text>
-              <DateTimePicker value={date} mode="date" locale="ja-JP" />
-            </View>
-
-            <View
-              style={{
-                marginBottom: 20,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text style={{ fontSize: 16, paddingBottom: 5 }}>点数</Text>
-              <TextInput
-                defaultValue=""
-                keyboardType="numeric"
-                style={{
-                  width: 120,
-                  borderColor: 'lightgray',
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  padding: 8,
-                  fontSize: 16,
-                }}
-              />
-            </View>
           </View>
           <View style={{ width: '100%' }}>
             <TouchableOpacity
               style={{
                 paddingHorizontal: 20,
                 paddingVertical: 10,
-                borderRadius: 5,
+                borderRadius: 10,
                 backgroundColor: Colors.light.tint,
                 marginTop: 20,
               }}
@@ -337,7 +490,7 @@ export default function MyGraphScreen() {
                 top: 0,
                 paddingHorizontal: 20,
                 paddingVertical: 10,
-                borderRadius: 5,
+                borderRadius: 10,
                 borderColor: 'red',
                 borderWidth: 1,
                 backgroundColor: 'white',
@@ -359,8 +512,8 @@ export default function MyGraphScreen() {
                         realm.write(() => {
                           realm.delete(exam);
                         });
-                        setExam(null);
                         setVisibleEditModal(false);
+                        setChartData(null);
                       },
                     },
                   ],
@@ -369,7 +522,7 @@ export default function MyGraphScreen() {
               }}
             >
               <Text style={{ fontWeight: 'bold', color: 'red', textAlign: 'center' }}>
-                削除する
+                試験データを削除する
               </Text>
             </TouchableOpacity>
           </View>
@@ -382,6 +535,7 @@ export default function MyGraphScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    paddingBottom: 100,
   },
   title: {
     fontSize: 24,

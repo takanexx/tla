@@ -49,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="my-graph"
         options={{
-          title: 'グラフ',
+          title: '試験データ',
           tabBarIcon: ({ focused, color }) => (
             <Ionicons size={28} name={focused ? 'podium' : 'podium-outline'} color={color} />
           ),
