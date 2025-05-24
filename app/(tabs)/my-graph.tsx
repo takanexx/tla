@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import {
   Alert,
   Dimensions,
+  FlatList,
   Modal,
   SafeAreaView,
   ScrollView,
@@ -20,16 +21,6 @@ import {
 import { LineChart } from 'react-native-chart-kit';
 
 const screenWidth = Dimensions.get('window').width;
-
-const data = {
-  labels: ['1月', '3月', '4月', '7月', '8月', '9月'],
-  datasets: [
-    {
-      data: [20, 45, 28, 80, 99, 43],
-      strokeWidth: 2,
-    },
-  ],
-};
 
 const chartConfig = {
   backgroundGradientFrom: '#1E2923',
@@ -45,15 +36,24 @@ const chartConfig = {
 export default function MyGraphScreen() {
   const realm = useRealm();
   const exam = useQuery(Exam)[0] ?? null;
-  const [chartData, setChartData] = useState<Object | any>({
-    labels: exam?.results.sorted('date').map(result => result.date.toLocaleDateString('ja-JP')),
-    datasets: [
-      {
-        data: exam?.results.sorted('date').map(result => result.score),
-        strokeWidth: 2,
-      },
-    ],
-  });
+  let firstShowChartData = null;
+
+  if (exam?.results.length > 0) {
+    firstShowChartData = {
+      labels: exam?.results
+        .sorted('date')
+        .map(result =>
+          result.date.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }),
+        ),
+      datasets: [
+        {
+          data: exam?.results.sorted('date').map(result => result.score),
+          strokeWidth: 2,
+        },
+      ],
+    };
+  }
+  const [chartData, setChartData] = useState<Object | any>(firstShowChartData);
   const [visible, setVisible] = useState(false);
   const [visibleAddResultModal, setVisibleAddResultModal] = useState(false);
   const [visibleEditModal, setVisibleEditModal] = useState(false);
@@ -64,6 +64,7 @@ export default function MyGraphScreen() {
     title: '',
     date: new Date(),
   });
+  const [isDeleteProgress, setIsDeleteProgress] = useState(false);
 
   // 試験データの作成処理
   const onCreateExam = () => {
@@ -104,7 +105,11 @@ export default function MyGraphScreen() {
 
     // チャートデータを更新
     setChartData({
-      labels: exam?.results.sorted('date').map(result => result.date.toLocaleDateString('ja-JP')),
+      labels: exam?.results
+        .sorted('date')
+        .map(result =>
+          result.date.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }),
+        ),
       datasets: [
         {
           data: exam?.results.sorted('date').map(result => result.score),
@@ -275,6 +280,7 @@ export default function MyGraphScreen() {
               bezier
               style={styles.chart}
               yAxisSuffix="点"
+              yAxisInterval={20}
               formatYLabel={value => {
                 return Math.trunc(Number(value)).toString();
               }}
@@ -285,13 +291,30 @@ export default function MyGraphScreen() {
 
       <View style={{ marginTop: 20 }}>
         <View style={{ alignItems: 'center', flexDirection: 'row' }}>
-          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>結果一覧</Text>
-          <TouchableOpacity
-            style={{ paddingLeft: 10 }}
-            onPress={() => setVisibleAddResultModal(true)}
-          >
-            <Ionicons name="add-circle-outline" size={20} color="gray" />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>結果一覧</Text>
+            <TouchableOpacity
+              style={{ paddingLeft: 10 }}
+              onPress={() => setVisibleAddResultModal(true)}
+            >
+              <Ionicons name="add-circle-outline" size={20} color="gray" />
+            </TouchableOpacity>
+          </View>
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{ paddingLeft: 10 }}
+              onPress={() => {
+                if (!exam?.results.length) return;
+                setIsDeleteProgress(!isDeleteProgress);
+              }}
+            >
+              <Ionicons
+                name={isDeleteProgress ? 'arrow-undo-outline' : 'trash-outline'}
+                size={20}
+                color={isDeleteProgress ? 'gray' : 'red'}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.card}>
           {exam?.results.length === 0 ? (
@@ -307,18 +330,76 @@ export default function MyGraphScreen() {
             </View>
           ) : (
             // 試験結果がある場合
-            exam?.results.sorted('date').map((result, index) => (
-              <View
-                key={index}
-                style={{
-                  ...styles.sectionListItemView,
-                  borderBottomWidth: exam?.results.length === index + 1 ? 0 : 1,
-                }}
-              >
-                <Text style={{ fontSize: 16 }}>{result.date.toLocaleDateString('ja-JP')}</Text>
-                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{result.score}点</Text>
-              </View>
-            ))
+            <FlatList
+              data={exam?.results.sorted('date')}
+              keyExtractor={item => item.date.toString()}
+              renderItem={({ item, index }) => (
+                <View
+                  style={{
+                    ...styles.sectionListItemView,
+                    borderBottomWidth: exam?.results.length === index + 1 ? 0 : 1,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {isDeleteProgress && (
+                      <TouchableOpacity
+                        onPress={() => {
+                          // 対象の試験結果を削除する
+                          // NOTE: 試験結果一覧のデータはソート後のデータであるため、indexをそのまま使うことはできないかつ、
+                          //       sorted()後のデータを使ってもデータ自体更新はされないので、ソート前と後のデータを比較して削除する
+                          let deleteIndex: number = -1;
+                          exam?.results.forEach((result, i) => {
+                            if (
+                              result.date.getTime() === item.date.getTime() &&
+                              result.score === item.score
+                            ) {
+                              deleteIndex = i;
+                            }
+                          });
+                          if (deleteIndex === -1) return;
+
+                          // 試験結果を削除
+                          realm.write(() => {
+                            exam?.results.splice(deleteIndex, 1);
+                          });
+
+                          let data = null;
+                          if (exam?.results.length > 0) {
+                            data = {
+                              labels: exam?.results.sorted('date').map(result =>
+                                result.date.toLocaleDateString('ja-JP', {
+                                  month: 'numeric',
+                                  day: 'numeric',
+                                }),
+                              ),
+                              datasets: [
+                                {
+                                  data: exam?.results.sorted('date').map(result => result.score),
+                                  strokeWidth: 2,
+                                },
+                              ],
+                            };
+                          }
+                          setChartData(data);
+                          setIsDeleteProgress(false);
+                        }}
+                      >
+                        <Ionicons
+                          name="remove-circle"
+                          size={22}
+                          color="red"
+                          style={{ marginRight: 10 }}
+                        />
+                      </TouchableOpacity>
+                    )}
+                    <Text style={{ fontSize: 16 }}>{item.date.toLocaleDateString('ja-JP')}</Text>
+                  </View>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.score}点</Text>
+                </View>
+              )}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator
+            />
           )}
         </View>
       </View>
