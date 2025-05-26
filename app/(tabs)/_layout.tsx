@@ -6,10 +6,20 @@ import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { User } from '@/lib/realmSchema';
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@realm/react';
+import CreateUser from '../create-user';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const user = useQuery(User);
+
+  if (user.isEmpty()) {
+    // If no user exists, redirect to create user screen
+    // 新規ユーザーが存在しない場合は、ユーザー作成画面を表示する
+    return <CreateUser />;
+  }
 
   return (
     <Tabs

@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -7,6 +8,7 @@ export default function FloatingActionButton() {
 
   // FABのトグル処理
   const toggleMenu = () => {
+    router.push('/create-user'); // ユーザー作成画面に遷移
     setOpen(!open);
   };
 
