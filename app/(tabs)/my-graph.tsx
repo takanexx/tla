@@ -1,8 +1,9 @@
 import { Colors } from '@/constants/Colors';
-import { Exam, ExamResult } from '@/lib/realmSchema';
+import { Exam, ExamResult, User } from '@/lib/realmSchema';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQuery, useRealm } from '@realm/react';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -34,8 +35,16 @@ const chartConfig = {
 };
 
 export default function MyGraphScreen() {
+  const router = useRouter();
   const realm = useRealm();
-  const exam = useQuery(Exam)[0] ?? null;
+  const users = useQuery(User); // 現在のユーザーを取得
+  if (users.isEmpty() || !users[0]) {
+    // ユーザーが存在しない場合は、エラー画面を表示する
+    router.navigate('/create-user');
+  }
+  const user = users[0]; // 最初のユーザーを取得
+  // ユーザーに紐づく試験データを取得
+  const exam = useQuery(Exam).filtered('userId == $0', user._id.toString())[0] ?? null; // ユーザーに紐づく試験データを取得
   let firstShowChartData = null;
 
   if (exam?.results.length > 0) {
@@ -80,7 +89,10 @@ export default function MyGraphScreen() {
 
     // 試験データを作成（試験結果を含む）
     realm.write(() => {
-      realm.create('Exam', Exam.generate({ userId: '', title: title, results: examResults }));
+      realm.create(
+        'Exam',
+        Exam.generate({ userId: user._id.toString(), title: title, results: examResults }),
+      );
     });
 
     // タイトルを空にしてモーダルを閉じる
@@ -132,10 +144,16 @@ export default function MyGraphScreen() {
         <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 60 }}>
           <Text style={{ fontSize: 18, color: 'gray' }}>試験データがありません</Text>
           <TouchableOpacity
-            style={{ padding: 10, borderRadius: 5, backgroundColor: '#e0e0e0', marginTop: 20 }}
+            style={{
+              paddingHorizontal: 30,
+              paddingVertical: 10,
+              borderRadius: 5,
+              backgroundColor: Colors.light.tint,
+              marginTop: 20,
+            }}
             onPress={() => setVisible(true)}
           >
-            <Text style={{ fontWeight: 'bold' }}>試験データを作成</Text>
+            <Text style={{ fontWeight: 'bold', color: '#fff' }}>試験データを作成</Text>
           </TouchableOpacity>
         </View>
         <Modal

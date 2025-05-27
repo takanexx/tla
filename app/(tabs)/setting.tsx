@@ -5,6 +5,7 @@ import { useQuery, useRealm } from '@realm/react';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   Modal,
   SafeAreaView,
   ScrollView,
@@ -103,6 +104,44 @@ export default function SettingScreen() {
           </View>
         </View>
       </View>
+
+      <View style={{ marginTop: 40 }}>
+        <TouchableOpacity
+          onPress={() => {
+            Alert.alert(
+              'アカウントを削除しますか？',
+              'ユーザーに紐づく全てのデータが削除されます。削除したデータを復元することはできません。',
+              [
+                {
+                  text: 'キャンセル',
+                  style: 'cancel',
+                },
+                {
+                  text: '削除する',
+                  style: 'destructive',
+                  onPress: () => {
+                    realm.write(() => {
+                      realm.deleteAll(); // 全てのデータを削除
+                    });
+                    router.replace('/create-user'); // ユーザー削除後にユーザー作成画面へ遷移
+                  },
+                },
+              ],
+            );
+          }}
+          style={{
+            paddingHorizontal: 15,
+            paddingVertical: 8,
+            borderRadius: 10,
+            borderColor: 'red',
+            borderWidth: 1,
+            marginTop: 30,
+          }}
+        >
+          <Text style={{ fontSize: 16, color: 'red', textAlign: 'center' }}>アカウントの削除</Text>
+        </TouchableOpacity>
+      </View>
+
       <Modal
         animationType="slide"
         transparent={true}
