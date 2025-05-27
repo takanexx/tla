@@ -30,7 +30,13 @@ export default function RootLayout() {
   }
 
   return (
-    <RealmProvider schema={[User, Record, Exam, ExamResult]}>
+    <RealmProvider
+      schema={[User, Record, Exam, ExamResult]}
+      // Set to true only for development purposes
+      // This will delete the Realm database if a migration is needed.
+      // In production, you should handle migrations properly.
+      deleteRealmIfMigrationNeeded={true}
+    >
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack initialRouteName="create-user">
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

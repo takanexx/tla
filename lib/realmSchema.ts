@@ -32,6 +32,7 @@ export class User extends Realm.Object<User> {
   name!: string;
   email!: string;
   theme!: string;
+  plan!: number;
   createdAt!: Date;
 
   static generate(params: { name?: string; email?: string } = {}) {
@@ -40,6 +41,7 @@ export class User extends Realm.Object<User> {
       name: params.name,
       email: params.email,
       theme: 'light',
+      plan: 1, // 1: Free, 2: Pro
       createdAt: new Date(),
     };
   }
@@ -52,6 +54,7 @@ export class User extends Realm.Object<User> {
       name: 'string',
       email: 'string',
       theme: 'string',
+      plan: 'int',
       createdAt: 'date',
     },
   };
