@@ -63,13 +63,22 @@ export class User extends Realm.Object<User> {
 export class Record extends Realm.Object<Record> {
   _id!: Realm.BSON.ObjectId;
   userId!: string;
+  title!: string;
   startedAt!: Date;
   endedAt!: Date;
 
-  static generate(params: { userId?: string } = {}) {
+  static generate(
+    params: {
+      userId?: string;
+      title?: string;
+      startedAt?: Date;
+      endedAt?: Date;
+    } = {},
+  ) {
     return {
       _id: new Realm.BSON.ObjectId(),
       userId: params.userId,
+      title: params.title || '',
       startedAt: new Date(),
       endedAt: new Date(),
     };
@@ -81,6 +90,7 @@ export class Record extends Realm.Object<Record> {
     properties: {
       _id: 'objectId',
       userId: 'string',
+      title: 'string',
       startedAt: 'date',
       endedAt: 'date',
     },

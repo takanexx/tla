@@ -1,5 +1,23 @@
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Colors } from '@/constants/Colors';
+import { Record, User } from '@/lib/realmSchema';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useQuery, useRealm } from '@realm/react';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import {
+  Dimensions,
+  FlatList,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
@@ -48,6 +66,25 @@ const chartConfig = {
 };
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const realm = useRealm();
+  const users = useQuery(User);
+  if (users.isEmpty() || !users[0]) {
+    // ユーザーが存在しない場合は、エラー画面を表示する
+    router.navigate('/create-user');
+  }
+  const user = users[0];
+  const records = useQuery(Record).filtered('startedAt >= $0', new Date(new Date().toDateString()));
+
+  const [visible, setVisible] = useState(false);
+  const [title, setTitle] = useState('');
+  const [startedAd, setStartedAd] = useState(new Date());
+  const [endedAt, setEndedAt] = useState(new Date());
+
+  const onPressFunction = () => {
+    setVisible(true);
+  };
+
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
@@ -74,23 +111,42 @@ export default function HomeScreen() {
               alignItems: 'center',
               justifyContent: 'space-between',
               marginBottom: 10,
+              borderBottomWidth: 2,
+              borderBottomColor: 'lightgray',
             }}
           >
             <Text style={{ ...styles.cardTitle }}>今日の稼働</Text>
             <Text style={styles.text}>合計 5時間</Text>
           </View>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>勉強</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>6時〜7時</Text>
-          </View>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>勉強</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>15時〜17時</Text>
-          </View>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>勉強</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>20時〜22時</Text>
-          </View>
+          <FlatList
+            data={records}
+            keyExtractor={item => item._id.toString()}
+            renderItem={({ item, index }) => (
+              <View
+                style={{
+                  ...styles.sectionListItemView,
+                  borderBottomWidth: index + 1 === records.length ? 0 : 1,
+                }}
+              >
+                <Text style={{ fontSize: 16 }}>{item.title}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                    {item.startedAt.toLocaleTimeString('ja-JP', {
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    })}
+                  </Text>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', paddingHorizontal: 5 }}>〜</Text>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                    {item.endedAt.toLocaleTimeString('ja-JP', {
+                      hour: 'numeric',
+                      minute: 'numeric',
+                    })}
+                  </Text>
+                </View>
+              </View>
+            )}
+          />
         </View>
         <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
           <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
@@ -147,7 +203,103 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
-      <FloatingActionButton />
+      <FloatingActionButton onPressFunction={onPressFunction} />
+      <Modal
+        animationType="slide"
+        presentationStyle="pageSheet"
+        visible={visible}
+        onRequestClose={() => setVisible(false)}
+      >
+        <View style={{ alignItems: 'flex-end' }}>
+          <Ionicons
+            name="close-circle-outline"
+            size={26}
+            color="black"
+            style={{ padding: 10 }}
+            onPress={() => setVisible(false)}
+          />
+        </View>
+        <View style={{ justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View style={{ width: '100%' }}>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 16, paddingBottom: 5 }}>項目</Text>
+              <TextInput
+                defaultValue={title}
+                style={{
+                  width: '100%',
+                  borderColor: 'lightgray',
+                  borderWidth: 1,
+                  borderRadius: 10,
+                  padding: 8,
+                  fontSize: 16,
+                }}
+                onChangeText={value => setTitle(value)}
+              />
+            </View>
+            <View
+              style={{
+                marginBottom: 20,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontSize: 16, paddingBottom: 5 }}>時間</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <DateTimePicker
+                  value={startedAd}
+                  mode="time"
+                  locale="ja-JP"
+                  onChange={(event, date) => {
+                    if (!date) return;
+                    setStartedAd(date);
+                  }}
+                />
+                <Text style={{ textAlign: 'center', padding: 10 }}>〜</Text>
+                <DateTimePicker
+                  value={endedAt}
+                  mode="time"
+                  locale="ja-JP"
+                  onChange={(event, date) => {
+                    if (!date) return;
+                    setEndedAt(date);
+                  }}
+                />
+              </View>
+            </View>
+
+            <View style={{ width: '100%' }}>
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 5,
+                  backgroundColor: Colors.light.tint,
+                  marginTop: 20,
+                }}
+                onPress={() => {
+                  realm.write(() => {
+                    realm.create(
+                      'Record',
+                      Record.generate({
+                        userId: user._id.toString(),
+                        title: title,
+                        startedAt: startedAd,
+                        endedAt: endedAt,
+                      }),
+                    );
+                  });
+                  setVisible(false);
+                }}
+              >
+                <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center' }}>
+                  追加する
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }

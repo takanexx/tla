@@ -85,6 +85,17 @@ export default function MyGraphScreen() {
         score: score,
       }) as unknown as ExamResult;
       examResults.push(examResult);
+
+      // チャートデータを更新
+      setChartData({
+        labels: [date.toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })],
+        datasets: [
+          {
+            data: [score],
+            strokeWidth: 2,
+          },
+        ],
+      });
     }
 
     // 試験データを作成（試験結果を含む）
@@ -197,7 +208,15 @@ export default function MyGraphScreen() {
                 }}
               >
                 <Text style={{ fontSize: 16, paddingBottom: 5 }}>試験日</Text>
-                <DateTimePicker value={date} mode="date" locale="ja-JP" />
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  locale="ja-JP"
+                  onChange={(event, value) => {
+                    if (!value) return;
+                    setDate(value);
+                  }}
+                />
               </View>
 
               <View

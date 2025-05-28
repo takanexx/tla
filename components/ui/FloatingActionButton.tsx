@@ -1,21 +1,16 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-export default function FloatingActionButton() {
-  const [open, setOpen] = useState(false);
-
-  // FABのトグル処理
-  const toggleMenu = () => {
-    router.push('/create-user'); // ユーザー作成画面に遷移
-    setOpen(!open);
-  };
-
+export default function FloatingActionButton({
+  onPressFunction,
+}: {
+  onPressFunction?: () => void;
+}) {
   return (
     <View style={styles.container}>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={toggleMenu}>
+        <TouchableOpacity onPress={onPressFunction}>
           <View style={styles.button}>
             <Ionicons name="add" color={'white'} size={35} />
           </View>
