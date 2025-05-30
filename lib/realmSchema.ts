@@ -79,8 +79,8 @@ export class Record extends Realm.Object<Record> {
       _id: new Realm.BSON.ObjectId(),
       userId: params.userId,
       title: params.title || '',
-      startedAt: new Date(),
-      endedAt: new Date(),
+      startedAt: params.startedAt,
+      endedAt: params.endedAt,
     };
   }
 

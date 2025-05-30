@@ -370,6 +370,7 @@ export default function MyGraphScreen() {
             <FlatList
               data={exam?.results.sorted('date')}
               keyExtractor={item => item.date.toString()}
+              scrollEnabled={false}
               renderItem={({ item, index }) => (
                 <View
                   style={{
@@ -434,8 +435,6 @@ export default function MyGraphScreen() {
                   <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.score}点</Text>
                 </View>
               )}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator
             />
           )}
         </View>
@@ -457,14 +456,14 @@ export default function MyGraphScreen() {
             }}
           />
         </TouchableWithoutFeedback>
-        <SafeAreaView
+        <View
           style={{
             height: 'auto',
             backgroundColor: 'white',
             marginTop: 'auto',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            marginBottom: 40,
+            paddingBottom: 40,
           }}
         >
           <View style={{ alignItems: 'flex-end', padding: 10, paddingBottom: 0 }}>
@@ -527,8 +526,6 @@ export default function MyGraphScreen() {
                   onChangeText={text => setScore(Number(text))}
                 />
               </View>
-            </View>
-            <View style={{ width: '100%' }}>
               <TouchableOpacity
                 style={{
                   paddingHorizontal: 20,
@@ -545,7 +542,7 @@ export default function MyGraphScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </SafeAreaView>
+        </View>
       </Modal>
 
       <Modal

@@ -42,6 +42,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />
           <Stack.Screen name="create-user" />
+          <Stack.Screen name="setting-routine" />
           {/* <Stack.Screen
             name="user-edit"
             options={{ headerBackTitle: '戻る', headerTitle: 'ユーザー情報' }}

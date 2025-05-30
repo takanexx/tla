@@ -75,6 +75,19 @@ export default function HomeScreen() {
   }
   const user = users[0];
   const records = useQuery(Record).filtered('startedAt >= $0', new Date(new Date().toDateString()));
+  let totalHours = 0;
+  let totalMinutes = 0;
+  if (!records.isEmpty()) {
+    // 今日の稼働の合計時間を計算
+    const totalTime = records.reduce((acc, record) => {
+      const startedAt = record.startedAt.getTime();
+      const endedAt = record.endedAt.getTime();
+      return acc + (endedAt - startedAt);
+    }, 0);
+    // 合計時間を時間と分に変換
+    totalHours = Math.floor(totalTime / (1000 * 60 * 60));
+    totalMinutes = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
+  }
 
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState('');
@@ -85,6 +98,27 @@ export default function HomeScreen() {
     setVisible(true);
   };
 
+  // 稼働追加時の処理
+  const onAddRecord = () => {
+    realm.write(() => {
+      realm.create(
+        'Record',
+        Record.generate({
+          userId: user._id.toString(),
+          title: title,
+          startedAt: startedAd,
+          endedAt: endedAt,
+        }),
+      );
+    });
+
+    // 値をリセット
+    setTitle('');
+    setStartedAd(new Date());
+    setEndedAt(new Date());
+    setVisible(false);
+  };
+
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
@@ -92,7 +126,16 @@ export default function HomeScreen() {
           <Text style={styles.title}>TLA</Text>
         </SafeAreaView>
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>3/28 アセット</Text>
+          <View
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <Text style={styles.cardTitle}>
+              {new Date().toLocaleString('ja-JP', { month: 'numeric', day: 'numeric' })} アセット
+            </Text>
+            <TouchableOpacity onPress={() => router.navigate('/setting-routine')}>
+              <Ionicons name="settings-outline" size={26} color={'gray'} />
+            </TouchableOpacity>
+          </View>
           <PieChart
             data={data}
             width={screenWidth - 40}
@@ -116,11 +159,14 @@ export default function HomeScreen() {
             }}
           >
             <Text style={{ ...styles.cardTitle }}>今日の稼働</Text>
-            <Text style={styles.text}>合計 5時間</Text>
+            <Text style={styles.text}>
+              合計 {totalHours}時間{totalMinutes}分
+            </Text>
           </View>
           <FlatList
             data={records}
             keyExtractor={item => item._id.toString()}
+            scrollEnabled={false}
             renderItem={({ item, index }) => (
               <View
                 style={{
@@ -221,6 +267,7 @@ export default function HomeScreen() {
         </View>
         <View style={{ justifyContent: 'center', alignItems: 'center', padding: 20 }}>
           <View style={{ width: '100%' }}>
+            <Text style={styles.title}>稼働追加</Text>
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 16, paddingBottom: 5 }}>項目</Text>
               <TextInput
@@ -239,16 +286,21 @@ export default function HomeScreen() {
             <View
               style={{
                 marginBottom: 20,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
               }}
             >
               <Text style={{ fontSize: 16, paddingBottom: 5 }}>時間</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <DateTimePicker
                   value={startedAd}
                   mode="time"
+                  display="spinner"
+                  style={{ flex: 1, marginRight: 10 }}
                   locale="ja-JP"
                   onChange={(event, date) => {
                     if (!date) return;
@@ -259,6 +311,8 @@ export default function HomeScreen() {
                 <DateTimePicker
                   value={endedAt}
                   mode="time"
+                  display="spinner"
+                  style={{ flex: 1, marginRight: 10 }}
                   locale="ja-JP"
                   onChange={(event, date) => {
                     if (!date) return;
@@ -277,20 +331,7 @@ export default function HomeScreen() {
                   backgroundColor: Colors.light.tint,
                   marginTop: 20,
                 }}
-                onPress={() => {
-                  realm.write(() => {
-                    realm.create(
-                      'Record',
-                      Record.generate({
-                        userId: user._id.toString(),
-                        title: title,
-                        startedAt: startedAd,
-                        endedAt: endedAt,
-                      }),
-                    );
-                  });
-                  setVisible(false);
-                }}
+                onPress={onAddRecord}
               >
                 <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center' }}>
                   追加する
@@ -322,7 +363,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    paddingBottom: 25,
   },
   text: {
     fontSize: 18,

@@ -158,7 +158,7 @@ export default function SettingScreen() {
             marginTop: 'auto',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            marginBottom: 40,
+            paddingBottom: 40,
           }}
         >
           <View style={{ alignItems: 'flex-end', padding: 10, paddingBottom: 0 }}>
