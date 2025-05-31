@@ -1,10 +1,12 @@
 import { Colors } from '@/constants/Colors';
+import { Record, User } from '@/lib/realmSchema';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useRealm } from '@realm/react';
-import { Stack } from 'expo-router';
+import { useQuery, useRealm } from '@realm/react';
+import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  FlatList,
   Modal,
   ScrollView,
   StyleSheet,
@@ -16,11 +18,43 @@ import {
 } from 'react-native';
 
 const SettingRoutine = () => {
+  const router = useRouter();
   const realm = useRealm(); // Realmのインスタンスを取得
+  const users = useQuery(User);
+  if (users.isEmpty() || !users[0]) {
+    // ユーザーが存在しない場合は、エラー画面を表示する
+    router.navigate('/create-user');
+  }
+  const user = users[0];
+
   const [title, setTitle] = useState('');
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [visible, setVisible] = useState(false);
+
+  const routines = useQuery(Record).filtered('type == 2').sorted('startedAt');
+
+  // ルーティンの作成処理
+  const onAddRoutineRecord = () => {
+    realm.write(() => {
+      realm.create(
+        'Record',
+        Record.generate({
+          userId: user._id.toString(),
+          title: title,
+          type: 2, // 固定ルーティン
+          startedAt: startedAt,
+          endedAt: endedAt,
+        }),
+      );
+    });
+
+    setVisible(false);
+    // 値を初期化
+    setTitle('');
+    setEndedAt(new Date());
+    setStartedAt(new Date());
+  };
 
   return (
     <>
@@ -38,23 +72,51 @@ const SettingRoutine = () => {
         }}
       />
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={{ marginTop: 20 }}>
+        <View style={{ marginTop: 10 }}>
           <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティン</Text>
           <View style={styles.card}>
-            <View style={styles.sectionListItemView}>
-              <Text style={{ fontSize: 16 }}>ほげほげ</Text>
-              <View>
-                <Text style={{ fontSize: 16, fontWeight: 'bold' }}>1.0.0</Text>
+            {routines.length === 0 ? (
+              <View
+                style={{
+                  ...styles.sectionListItemView,
+                  borderBottomWidth: 0,
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ fontSize: 16 }}>固定ルーティンはまだありません</Text>
               </View>
-            </View>
-            <View style={styles.sectionListItemView}>
-              <Text style={{ fontSize: 16 }}>プライバシーポリシー</Text>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>外部リンク</Text>
-            </View>
-            <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
-              <Text style={{ fontSize: 16 }}>ご要望</Text>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>こちらから</Text>
-            </View>
+            ) : (
+              <FlatList
+                data={useQuery(Record).filtered('type == 2').sorted('startedAt')}
+                keyExtractor={item => item._id.toString()}
+                scrollEnabled={false}
+                renderItem={({ item, index }) => (
+                  <View
+                    style={{
+                      ...styles.sectionListItemView,
+                      borderBottomWidth: routines.length === index + 1 ? 0 : 1,
+                    }}
+                  >
+                    <Text style={{ fontSize: 16 }}>{item.title}</Text>
+                    <View style={{ justifyContent: 'center', flexDirection: 'row' }}>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                        {item.startedAt.toLocaleTimeString('ja-JP', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}
+                      </Text>
+                      <Text style={{ fontSize: 16, paddingHorizontal: 5 }}>〜</Text>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                        {item.endedAt.toLocaleTimeString('ja-JP', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              />
+            )}
           </View>
         </View>
       </ScrollView>
@@ -78,17 +140,16 @@ const SettingRoutine = () => {
           }}
         >
           <View style={{ alignItems: 'flex-end', padding: 10, paddingBottom: 0 }}>
-            <Ionicons
-              name="close-circle-outline"
-              size={26}
-              color="black"
+            <TouchableOpacity
               onPress={() => {
                 setTitle('');
                 setStartedAt(new Date());
                 setEndedAt(new Date());
                 setVisible(false);
               }}
-            />
+            >
+              <Ionicons name="close-circle-outline" size={26} color="black" />
+            </TouchableOpacity>
           </View>
           <View
             style={{
@@ -155,12 +216,7 @@ const SettingRoutine = () => {
                   backgroundColor: Colors.light.tint,
                   marginTop: 30,
                 }}
-                onPress={() => {
-                  setVisible(false);
-                  setTitle('');
-                  setStartedAt(new Date());
-                  setEndedAt(new Date());
-                }}
+                onPress={onAddRoutineRecord}
               >
                 <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>追加</Text>
               </TouchableOpacity>
