@@ -6,6 +6,7 @@ import { useQuery, useRealm } from '@realm/react';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Alert,
   FlatList,
   Modal,
   ScrollView,
@@ -31,6 +32,8 @@ const SettingRoutine = () => {
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [visible, setVisible] = useState(false);
+  const [modalType, setModalType] = useState('add');
+  const [editRoutine, setEditRoutine] = useState<Record | null>(null);
 
   const routines = useQuery(Record).filtered('type == 2').sorted('startedAt');
 
@@ -48,12 +51,18 @@ const SettingRoutine = () => {
         }),
       );
     });
+    resetState();
+  };
 
+  // リセット処理
+  const resetState = () => {
     setVisible(false);
+    setModalType('add');
     // 値を初期化
     setTitle('');
     setEndedAt(new Date());
     setStartedAt(new Date());
+    setEditRoutine(null);
   };
 
   return (
@@ -73,7 +82,14 @@ const SettingRoutine = () => {
       />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={{ marginTop: 10 }}>
-          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティン</Text>
+          <View
+            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
+          >
+            <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティン</Text>
+            <TouchableOpacity>
+              <Ionicons name="add-circle" size={20} />
+            </TouchableOpacity>
+          </View>
           <View style={styles.card}>
             {routines.length === 0 ? (
               <View
@@ -98,7 +114,13 @@ const SettingRoutine = () => {
                     }}
                   >
                     <Text style={{ fontSize: 16 }}>{item.title}</Text>
-                    <View style={{ justifyContent: 'center', flexDirection: 'row' }}>
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
                       <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
                         {item.startedAt.toLocaleTimeString('ja-JP', {
                           hour: 'numeric',
@@ -112,6 +134,16 @@ const SettingRoutine = () => {
                           minute: 'numeric',
                         })}
                       </Text>
+                      <TouchableOpacity
+                        style={{ paddingLeft: 10 }}
+                        onPress={() => {
+                          setModalType('edit');
+                          setEditRoutine(item);
+                          setVisible(true);
+                        }}
+                      >
+                        <Ionicons name="ellipsis-vertical" size={18} />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )}
@@ -124,9 +156,9 @@ const SettingRoutine = () => {
         animationType="slide"
         transparent={true}
         visible={visible}
-        onRequestClose={() => setVisible(false)}
+        onRequestClose={() => resetState()}
       >
-        <TouchableWithoutFeedback onPress={() => setVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => resetState()}>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
         </TouchableWithoutFeedback>
         <View
@@ -140,14 +172,7 @@ const SettingRoutine = () => {
           }}
         >
           <View style={{ alignItems: 'flex-end', padding: 10, paddingBottom: 0 }}>
-            <TouchableOpacity
-              onPress={() => {
-                setTitle('');
-                setStartedAt(new Date());
-                setEndedAt(new Date());
-                setVisible(false);
-              }}
-            >
+            <TouchableOpacity onPress={() => resetState()}>
               <Ionicons name="close-circle-outline" size={26} color="black" />
             </TouchableOpacity>
           </View>
@@ -172,7 +197,7 @@ const SettingRoutine = () => {
                     fontSize: 16,
                     backgroundColor: '#fff',
                   }}
-                  value={title}
+                  value={modalType === 'edit' ? editRoutine?.title : title}
                   onChangeText={text => setTitle(text)}
                 />
               </View>
@@ -216,10 +241,55 @@ const SettingRoutine = () => {
                   backgroundColor: Colors.light.tint,
                   marginTop: 30,
                 }}
-                onPress={onAddRoutineRecord}
+                onPress={() => {
+                  modalType === 'add' ? onAddRoutineRecord() : resetState();
+                }}
               >
-                <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>追加</Text>
+                <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+                  {modalType === 'add' ? '追加する' : '保存する'}
+                </Text>
               </TouchableOpacity>
+              {modalType !== 'add' && (
+                <TouchableOpacity
+                  style={{
+                    top: 0,
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    borderRadius: 10,
+                    borderColor: 'red',
+                    borderWidth: 1,
+                    backgroundColor: 'white',
+                    marginTop: 30,
+                  }}
+                  onPress={() => {
+                    Alert.alert(
+                      '試験データを削除しますか？',
+                      '削除したデータは復元できません。',
+                      [
+                        {
+                          text: 'キャンセル',
+                          style: 'cancel',
+                        },
+                        {
+                          text: '削除',
+                          style: 'destructive',
+                          onPress: () => {
+                            realm.write(() => {
+                              realm.delete(editRoutine);
+                            });
+                            resetState();
+                          },
+                        },
+                      ],
+                      { cancelable: false },
+                    );
+                  }}
+                >
+                  <Text style={{ fontWeight: 'bold', color: 'red', textAlign: 'center' }}>
+                    ルーティンを削除する
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
