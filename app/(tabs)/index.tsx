@@ -74,7 +74,10 @@ export default function HomeScreen() {
     router.navigate('/create-user');
   }
   const user = users[0];
-  const records = useQuery(Record).filtered('startedAt >= $0', new Date(new Date().toDateString()));
+  const records = useQuery(Record).filtered(
+    'startedAt >= $0 and type == 1',
+    new Date(new Date().toDateString()),
+  );
   let totalHours = 0;
   let totalMinutes = 0;
   if (!records.isEmpty()) {

@@ -54,6 +54,19 @@ const SettingRoutine = () => {
     resetState();
   };
 
+  // ルーティンの編集処理
+  const onEditRoutineRecord = () => {
+    if (!editRoutine) return;
+
+    realm.write(() => {
+      editRoutine.title = title;
+      editRoutine.startedAt = startedAt;
+      editRoutine.endedAt = endedAt;
+    });
+
+    resetState();
+  };
+
   // リセット処理
   const resetState = () => {
     setVisible(false);
@@ -82,14 +95,7 @@ const SettingRoutine = () => {
       />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={{ marginTop: 10 }}>
-          <View
-            style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティン</Text>
-            <TouchableOpacity>
-              <Ionicons name="add-circle" size={20} />
-            </TouchableOpacity>
-          </View>
+          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティン</Text>
           <View style={styles.card}>
             {routines.length === 0 ? (
               <View
@@ -139,6 +145,9 @@ const SettingRoutine = () => {
                         onPress={() => {
                           setModalType('edit');
                           setEditRoutine(item);
+                          setTitle(item.title);
+                          setStartedAt(item.startedAt);
+                          setEndedAt(item.endedAt);
                           setVisible(true);
                         }}
                       >
@@ -197,7 +206,7 @@ const SettingRoutine = () => {
                     fontSize: 16,
                     backgroundColor: '#fff',
                   }}
-                  value={modalType === 'edit' ? editRoutine?.title : title}
+                  value={title}
                   onChangeText={text => setTitle(text)}
                 />
               </View>
@@ -242,7 +251,11 @@ const SettingRoutine = () => {
                   marginTop: 30,
                 }}
                 onPress={() => {
-                  modalType === 'add' ? onAddRoutineRecord() : resetState();
+                  if (modalType === 'edit') {
+                    onEditRoutineRecord();
+                  } else {
+                    onAddRoutineRecord();
+                  }
                 }}
               >
                 <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
