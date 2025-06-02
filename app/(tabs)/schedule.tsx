@@ -1,11 +1,13 @@
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Record } from '@/lib/realmSchema';
+import { useTheme } from '@react-navigation/native';
 import { useQuery } from '@realm/react';
 import { Fragment, useState } from 'react';
 import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CalendarList, LocaleConfig } from 'react-native-calendars';
 
 export default function ScheduleScreen() {
+  const { colors } = useTheme();
   const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
   const records = useQuery(Record).filtered(
     'type == 1 and startedAt >= $0 and startedAt <= $1',
@@ -39,6 +41,8 @@ export default function ScheduleScreen() {
         <Fragment>
           <CalendarList
             theme={{
+              backgroundColor: colors.card,
+              calendarBackground: colors.card,
               // @ts-ignore
               'stylesheet.calendar.header': {
                 dayTextAtIndex0: {
@@ -78,7 +82,7 @@ export default function ScheduleScreen() {
             {`${new Date(selected).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })} `}
             稼働したタスク
           </Text>
-          <View style={styles.card}>
+          <View style={{ ...styles.card, backgroundColor: colors.card }}>
             {records.length === 0 ? (
               // 稼働がない場合
               <View
@@ -88,7 +92,7 @@ export default function ScheduleScreen() {
                   justifyContent: 'center',
                 }}
               >
-                <Text>稼働はありません</Text>
+                <Text style={{ color: colors.text }}>稼働はありません</Text>
               </View>
             ) : (
               // 稼働がある場合
@@ -101,20 +105,28 @@ export default function ScheduleScreen() {
                     style={{
                       ...styles.sectionListItemView,
                       borderBottomWidth: records.length === index + 1 ? 0 : 1,
+                      borderBottomColor: colors.border,
                     }}
                   >
-                    <Text style={{ fontSize: 16 }}>{item.title}</Text>
+                    <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
                         {item.startedAt.toLocaleTimeString('ja-JP', {
                           hour: 'numeric',
                           minute: 'numeric',
                         })}
                       </Text>
-                      <Text style={{ fontSize: 16, fontWeight: 'bold', paddingHorizontal: 5 }}>
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 'bold',
+                          paddingHorizontal: 5,
+                          color: colors.text,
+                        }}
+                      >
                         〜
                       </Text>
-                      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
                         {item.endedAt.toLocaleTimeString('ja-JP', {
                           hour: 'numeric',
                           minute: 'numeric',
