@@ -79,6 +79,7 @@ export default function HomeScreen() {
     new Date(new Date().toLocaleDateString('sv-SE')), // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
     new Date(`${new Date().toLocaleDateString('sv-SE')} 23:59:59`),
   );
+
   let totalHours = 0;
   let totalMinutes = 0;
   if (!records.isEmpty()) {
@@ -92,6 +93,8 @@ export default function HomeScreen() {
     totalHours = Math.floor(totalTime / (1000 * 60 * 60));
     totalMinutes = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
   }
+
+  const routines = useQuery(Record).filtered('type == 2');
 
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState('');

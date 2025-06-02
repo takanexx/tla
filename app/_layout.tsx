@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { RealmProvider } from '@realm/react';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -7,14 +7,13 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { Exam, ExamResult, Record, User } from '@/lib/realmSchema';
+import { ThemeProviderCustom, useThemeContext } from '@/Themecontext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -37,19 +36,26 @@ export default function RootLayout() {
       // In production, you should handle migrations properly.
       deleteRealmIfMigrationNeeded={true}
     >
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack initialRouteName="create-user">
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-          <Stack.Screen name="create-user" />
-          <Stack.Screen name="setting-routine" />
-          {/* <Stack.Screen
+      <ThemeProviderCustom>
+        <NavigationThemeWrapper>
+          <Stack initialRouteName="create-user">
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+            <Stack.Screen name="create-user" />
+            <Stack.Screen name="setting-routine" />
+            {/* <Stack.Screen
             name="user-edit"
             options={{ headerBackTitle: '戻る', headerTitle: 'ユーザー情報' }}
           /> */}
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+          </Stack>
+          <StatusBar style="auto" />
+        </NavigationThemeWrapper>
+      </ThemeProviderCustom>
     </RealmProvider>
   );
+}
+
+function NavigationThemeWrapper({ children }: { children: React.ReactNode }) {
+  const { theme } = useThemeContext();
+  return <NavigationThemeProvider value={theme}>{children}</NavigationThemeProvider>;
 }

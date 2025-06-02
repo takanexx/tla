@@ -1,6 +1,8 @@
 import { Colors } from '@/constants/Colors';
 import { User } from '@/lib/realmSchema';
+import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
 import { useQuery, useRealm } from '@realm/react';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -28,10 +30,11 @@ export default function SettingScreen() {
   }
 
   const user = users[0]; // 最初のユーザーを取得
-  const [isDarkMode, setIsDarkMode] = useState(user.theme === 'dark');
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
+  const { colors } = useTheme();
+  const { isDark, toggleTheme } = useThemeContext();
   // ユーザー情報を更新する関数
   const onUpdateUser = () => {
     realm.write(() => {
@@ -49,58 +52,68 @@ export default function SettingScreen() {
           <Text style={{ padding: 5, fontWeight: 'bold', color: Colors.light.tint }}>編集</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.card}>
-        <View style={styles.sectionListItemView}>
-          <Text style={{ fontSize: 16 }}>ユーザー名</Text>
-          <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{user.name}</Text>
+      <View style={{ ...styles.card, backgroundColor: colors.card }}>
+        <View style={{ ...styles.sectionListItemView, borderBottomColor: colors.border }}>
+          <Text style={{ fontSize: 16, color: colors.text }}>ユーザー名</Text>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>{user.name}</Text>
         </View>
         <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
-          <Text style={{ fontSize: 16 }}>メールアドレス</Text>
-          <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{user.email}</Text>
+          <Text style={{ fontSize: 16, color: colors.text }}>メールアドレス</Text>
+          <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>{user.email}</Text>
         </View>
       </View>
 
       <View style={{ marginTop: 20 }}>
         <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>設定</Text>
-        <View style={styles.card}>
-          <View style={{ ...styles.sectionListItemView, paddingVertical: 5 }}>
-            <Text style={{ fontSize: 16 }}>テーマ</Text>
+        <View style={{ ...styles.card, backgroundColor: colors.card }}>
+          <View
+            style={{
+              ...styles.sectionListItemView,
+              paddingVertical: 5,
+              borderBottomColor: colors.border,
+            }}
+          >
+            <Text style={{ fontSize: 16, color: colors.text }}>テーマ</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={{ fontSize: 16, fontWeight: 'bold', paddingRight: 5 }}>
-                {isDarkMode ? 'ダーク' : 'ライト'}
+              <Text
+                style={{ fontSize: 16, fontWeight: 'bold', paddingRight: 5, color: colors.text }}
+              >
+                {isDark ? 'ダーク' : 'ライト'}
               </Text>
               <Switch
-                value={isDarkMode}
+                value={isDark}
                 onValueChange={value => {
-                  setIsDarkMode(value);
+                  toggleTheme();
                   realm.write(() => {
-                    user.theme = value ? 'dark' : 'light'; // ユーザーのテーマを更新
+                    user.theme = isDark ? 'dark' : 'light'; // ユーザーのテーマを更新
                   });
                 }}
               />
             </View>
           </View>
           <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
-            <Text style={{ fontSize: 16 }}>プラン</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>フリープラン</Text>
+            <Text style={{ fontSize: 16, color: colors.text }}>プラン</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+              フリープラン
+            </Text>
           </View>
         </View>
       </View>
 
       <View style={{ marginTop: 20 }}>
         <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>アプリ</Text>
-        <View style={styles.card}>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>バージョン</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>1.0.0</Text>
+        <View style={{ ...styles.card, backgroundColor: colors.card }}>
+          <View style={{ ...styles.sectionListItemView, borderBottomColor: colors.border }}>
+            <Text style={{ fontSize: 16, color: colors.text }}>バージョン</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>1.0.0</Text>
           </View>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>プライバシーポリシー</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>外部リンク</Text>
+          <View style={{ ...styles.sectionListItemView, borderBottomColor: colors.border }}>
+            <Text style={{ fontSize: 16, color: colors.text }}>プライバシーポリシー</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>外部リンク</Text>
           </View>
           <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
-            <Text style={{ fontSize: 16 }}>ご要望</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>こちらから</Text>
+            <Text style={{ fontSize: 16, color: colors.text }}>ご要望</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>こちらから</Text>
           </View>
         </View>
       </View>

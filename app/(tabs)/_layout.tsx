@@ -3,17 +3,18 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { User } from '@/lib/realmSchema';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
 import { useQuery } from '@realm/react';
 import CreateUser from '../create-user';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const user = useQuery(User);
+  const { colors } = useTheme();
 
   if (user.isEmpty()) {
     // If no user exists, redirect to create user screen
@@ -24,10 +25,11 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        tabBarInactiveBackgroundColor: colors.card,
+        tabBarActiveBackgroundColor: colors.card,
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect
