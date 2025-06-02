@@ -1,7 +1,9 @@
 import { Colors } from '@/constants/Colors';
 import { Exam, ExamResult, User } from '@/lib/realmSchema';
+import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from '@react-navigation/native';
 import { useQuery, useRealm } from '@realm/react';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -62,6 +64,8 @@ export default function MyGraphScreen() {
       ],
     };
   }
+  const { colors } = useTheme();
+  const { isDark, toggleTheme } = useThemeContext();
   const [chartData, setChartData] = useState<Object | any>(firstShowChartData);
   const [visible, setVisible] = useState(false);
   const [visibleAddResultModal, setVisibleAddResultModal] = useState(false);
@@ -152,7 +156,13 @@ export default function MyGraphScreen() {
         <SafeAreaView>
           <Text style={styles.title}>試験データ</Text>
         </SafeAreaView>
-        <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 60 }}>
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 60,
+          }}
+        >
           <Text style={{ fontSize: 18, color: 'gray' }}>試験データがありません</Text>
           <TouchableOpacity
             style={{
@@ -172,20 +182,28 @@ export default function MyGraphScreen() {
           presentationStyle="pageSheet"
           visible={visible}
           onRequestClose={() => setVisible(false)}
+          style={{ backgroundColor: colors.card }}
         >
-          <View style={{ alignItems: 'flex-end' }}>
+          <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
             <Ionicons
               name="close-circle-outline"
               size={26}
-              color="black"
+              color={'gray'}
               style={{ padding: 10 }}
               onPress={() => setVisible(false)}
             />
           </View>
-          <View style={{ justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <View
+            style={{
+              alignItems: 'center',
+              padding: 20,
+              height: '100%',
+              backgroundColor: colors.card,
+            }}
+          >
             <View style={{ width: '100%' }}>
               <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>試験名</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験名</Text>
                 <TextInput
                   defaultValue={title}
                   style={{
@@ -195,6 +213,7 @@ export default function MyGraphScreen() {
                     borderRadius: 10,
                     padding: 8,
                     fontSize: 16,
+                    color: colors.text,
                   }}
                   onChangeText={text => setTitle(text)}
                 />
@@ -207,8 +226,9 @@ export default function MyGraphScreen() {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>試験日</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験日</Text>
                 <DateTimePicker
+                  themeVariant={isDark ? 'dark' : 'light'}
                   value={date}
                   mode="date"
                   locale="ja-JP"
@@ -227,11 +247,12 @@ export default function MyGraphScreen() {
                   justifyContent: 'space-between',
                 }}
               >
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>点数</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>点数</Text>
                 <TextInput
                   defaultValue=""
                   keyboardType="numeric"
                   style={{
+                    color: colors.text,
                     width: 120,
                     borderColor: 'lightgray',
                     borderWidth: 1,
@@ -268,7 +289,7 @@ export default function MyGraphScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <SafeAreaView style={{ justifyContent: 'space-between', flexDirection: 'row', zIndex: 1 }}>
-        <Text style={styles.title}>試験データ</Text>
+        <Text style={{ ...styles.title, color: colors.text }}>試験データ</Text>
         <TouchableOpacity onPress={() => setVisibleEditModal(true)}>
           <Ionicons name="ellipsis-vertical" size={24} color="gray" style={{ marginBottom: 10 }} />
         </TouchableOpacity>
@@ -276,22 +297,24 @@ export default function MyGraphScreen() {
 
       <View>
         <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>最近の試験結果</Text>
-        <View style={styles.card}>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>試験名</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{exam?.title}</Text>
+        <View style={{ ...styles.card, backgroundColor: colors.card }}>
+          <View style={{ ...styles.sectionListItemView, borderBottomColor: colors.border }}>
+            <Text style={{ fontSize: 16, color: colors.text }}>試験名</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+              {exam?.title}
+            </Text>
           </View>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>試験日</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+          <View style={{ ...styles.sectionListItemView, borderBottomColor: colors.border }}>
+            <Text style={{ fontSize: 16, color: colors.text }}>試験日</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
               {exam?.results.length > 0
                 ? exam?.results.sorted('date', true)[0].date.toLocaleDateString('ja-JP')
                 : 'ー'}
             </Text>
           </View>
           <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
-            <Text style={{ fontSize: 16 }}>点数</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+            <Text style={{ fontSize: 16, color: colors.text }}>点数</Text>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
               {exam?.results.length > 0 ? `${exam?.results[0]?.score}点` : 'ー'}
             </Text>
           </View>
@@ -300,12 +323,14 @@ export default function MyGraphScreen() {
 
       <View style={{ marginTop: 20 }}>
         <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>グラフ</Text>
-        <View style={styles.card}>
+        <View style={{ ...styles.card, backgroundColor: colors.card }}>
           <Text style={{ fontWeight: 'bold', color: 'gray', padding: 5, textAlign: 'center' }}>
             {exam?.title}
           </Text>
           {!chartData ? (
-            <Text style={{ fontSize: 16, textAlign: 'center' }}>試験結果はまだありません</Text>
+            <Text style={{ fontSize: 16, textAlign: 'center', color: colors.text }}>
+              試験結果はまだありません
+            </Text>
           ) : (
             <LineChart
               transparent
@@ -353,7 +378,7 @@ export default function MyGraphScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        <View style={styles.card}>
+        <View style={{ ...styles.card, backgroundColor: colors.card }}>
           {exam?.results.length === 0 ? (
             // 試験結果がまだない場合
             <View
@@ -363,7 +388,7 @@ export default function MyGraphScreen() {
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ fontSize: 16 }}>試験結果はまだありません</Text>
+              <Text style={{ fontSize: 16, color: colors.text }}>試験結果はまだありません</Text>
             </View>
           ) : (
             // 試験結果がある場合
@@ -376,6 +401,7 @@ export default function MyGraphScreen() {
                   style={{
                     ...styles.sectionListItemView,
                     borderBottomWidth: exam?.results.length === index + 1 ? 0 : 1,
+                    borderBottomColor: colors.border,
                   }}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -430,9 +456,13 @@ export default function MyGraphScreen() {
                         />
                       </TouchableOpacity>
                     )}
-                    <Text style={{ fontSize: 16 }}>{item.date.toLocaleDateString('ja-JP')}</Text>
+                    <Text style={{ fontSize: 16, color: colors.text }}>
+                      {item.date.toLocaleDateString('ja-JP')}
+                    </Text>
                   </View>
-                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{item.score}点</Text>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+                    {item.score}点
+                  </Text>
                 </View>
               )}
             />
@@ -459,7 +489,7 @@ export default function MyGraphScreen() {
         <View
           style={{
             height: 'auto',
-            backgroundColor: 'white',
+            backgroundColor: colors.card,
             marginTop: 'auto',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
@@ -470,7 +500,7 @@ export default function MyGraphScreen() {
             <Ionicons
               name="close-circle-outline"
               size={26}
-              color="black"
+              color={'gray'}
               onPress={() => setVisibleAddResultModal(false)}
             />
           </View>
@@ -491,8 +521,9 @@ export default function MyGraphScreen() {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>試験日</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験日</Text>
                 <DateTimePicker
+                  themeVariant={isDark ? 'dark' : 'light'}
                   value={date}
                   mode="date"
                   locale="ja-JP"
@@ -511,11 +542,12 @@ export default function MyGraphScreen() {
                   justifyContent: 'space-between',
                 }}
               >
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>点数</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>点数</Text>
                 <TextInput
                   defaultValue=""
                   keyboardType="numeric"
                   style={{
+                    color: colors.text,
                     width: 120,
                     borderColor: 'lightgray',
                     borderWidth: 1,
@@ -551,22 +583,30 @@ export default function MyGraphScreen() {
         visible={visibleEditModal}
         onRequestClose={() => setVisibleEditModal(false)}
       >
-        <View style={{ alignItems: 'flex-end' }}>
+        <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
           <Ionicons
             name="close-circle-outline"
             size={26}
-            color="black"
+            color={'gray'}
             style={{ padding: 10 }}
             onPress={() => setVisibleEditModal(false)}
           />
         </View>
-        <View style={{ justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View
+          style={{
+            alignItems: 'center',
+            padding: 20,
+            backgroundColor: colors.card,
+            height: '100%',
+          }}
+        >
           <View style={{ width: '100%' }}>
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 16, paddingBottom: 5 }}>試験名</Text>
+              <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験名</Text>
               <TextInput
                 defaultValue={exam?.title}
                 style={{
+                  color: colors.text,
                   width: '100%',
                   borderColor: 'lightgray',
                   borderWidth: 1,
@@ -608,7 +648,6 @@ export default function MyGraphScreen() {
                 borderRadius: 10,
                 borderColor: 'red',
                 borderWidth: 1,
-                backgroundColor: 'white',
                 marginTop: 30,
               }}
               onPress={() => {

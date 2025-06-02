@@ -167,7 +167,7 @@ export default function SettingScreen() {
         <SafeAreaView
           style={{
             height: 'auto',
-            backgroundColor: 'white',
+            backgroundColor: colors.card,
             marginTop: 'auto',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
@@ -178,7 +178,7 @@ export default function SettingScreen() {
             <Ionicons
               name="close-circle-outline"
               size={26}
-              color="black"
+              color={'gray'}
               onPress={() => setVisible(false)}
             />
           </View>
@@ -192,11 +192,14 @@ export default function SettingScreen() {
           >
             <View style={{ width: '100%' }}>
               <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>ユーザー名</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
+                  ユーザー名
+                </Text>
                 <TextInput
                   defaultValue={name}
                   onChangeText={value => setName(value)}
                   style={{
+                    color: colors.text,
                     borderColor: 'lightgray',
                     borderWidth: 1,
                     borderRadius: 10,
@@ -205,14 +208,16 @@ export default function SettingScreen() {
                   }}
                 />
               </View>
-
               <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>メールアドレス</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
+                  メールアドレス
+                </Text>
                 <TextInput
                   defaultValue={email}
                   onChangeText={value => setEmail(value)}
                   keyboardType="email-address"
                   style={{
+                    color: colors.text,
                     borderColor: 'lightgray',
                     borderWidth: 1,
                     borderRadius: 10,
