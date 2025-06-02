@@ -75,8 +75,9 @@ export default function HomeScreen() {
   }
   const user = users[0];
   const records = useQuery(Record).filtered(
-    'startedAt >= $0 and type == 1',
-    new Date(new Date().toDateString()),
+    'type == 1 and startedAt >= $0 and startedAt <= $1',
+    new Date(new Date().toLocaleDateString('sv-SE')), // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
+    new Date(`${new Date().toLocaleDateString('sv-SE')} 23:59:59`),
   );
   let totalHours = 0;
   let totalMinutes = 0;

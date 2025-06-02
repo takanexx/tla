@@ -1,10 +1,17 @@
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
+import { Record } from '@/lib/realmSchema';
+import { useQuery } from '@realm/react';
 import { Fragment, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
 
 export default function ScheduleScreen() {
   const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
+  const records = useQuery(Record).filtered(
+    'type == 1 and startedAt >= $0 and startedAt <= $1',
+    new Date(selected),
+    new Date(`${selected} 23:59:59`),
+  );
 
   return (
     <>
@@ -12,6 +19,7 @@ export default function ScheduleScreen() {
         <Fragment>
           <CalendarList
             theme={{
+              // @ts-ignore
               'stylesheet.calendar.header': {
                 dayTextAtIndex0: {
                   color: 'red',
@@ -46,16 +54,57 @@ export default function ScheduleScreen() {
         </View> */}
 
         <View style={{}}>
-          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>稼働したタスク</Text>
+          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>
+            {`${new Date(selected).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })} `}
+            稼働したタスク
+          </Text>
           <View style={styles.card}>
-            <View style={styles.sectionListItemView}>
-              <Text style={{ fontSize: 16 }}>勉強</Text>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>6時〜7時</Text>
-            </View>
-            <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
-              <Text style={{ fontSize: 16 }}>勉強</Text>
-              <Text style={{ fontSize: 16, fontWeight: 'bold' }}>8時〜11時</Text>
-            </View>
+            {records.length === 0 ? (
+              // 稼働がない場合
+              <View
+                style={{
+                  ...styles.sectionListItemView,
+                  borderBottomWidth: 0,
+                  justifyContent: 'center',
+                }}
+              >
+                <Text>稼働はありません</Text>
+              </View>
+            ) : (
+              // 稼働がある場合
+              <FlatList
+                data={records}
+                keyExtractor={item => item._id.toString()}
+                scrollEnabled={false}
+                renderItem={({ item, index }) => (
+                  <View
+                    style={{
+                      ...styles.sectionListItemView,
+                      borderBottomWidth: records.length === index + 1 ? 0 : 1,
+                    }}
+                  >
+                    <Text style={{ fontSize: 16 }}>{item.title}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                        {item.startedAt.toLocaleTimeString('ja-JP', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}
+                      </Text>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', paddingHorizontal: 5 }}>
+                        〜
+                      </Text>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                        {item.endedAt.toLocaleTimeString('ja-JP', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+              />
+            )}
           </View>
         </View>
       </ScrollView>
