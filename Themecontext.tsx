@@ -1,6 +1,6 @@
 // ThemeContext.tsx
 import { Theme } from '@react-navigation/native';
-import { useQuery, useRealm } from '@realm/react';
+import { useQuery } from '@realm/react';
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { DarkTheme, LightTheme } from './constants/theme';
 import { User } from './lib/realmSchema';
@@ -15,10 +15,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProviderCustom = ({ children }: { children: ReactNode }) => {
   // 設定データを取得
-  const realm = useRealm();
   const users = useQuery(User);
 
-  console.log(users[0]);
   const [isDark, setIsDark] = useState(users.isEmpty() ? false : users[0].theme === 'dark');
 
   const toggleTheme = () => {
