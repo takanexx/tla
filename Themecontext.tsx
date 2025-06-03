@@ -18,6 +18,7 @@ export const ThemeProviderCustom = ({ children }: { children: ReactNode }) => {
   const realm = useRealm();
   const users = useQuery(User);
 
+  console.log(users[0]);
   const [isDark, setIsDark] = useState(users.isEmpty() ? false : users[0].theme === 'dark');
 
   const toggleTheme = () => {

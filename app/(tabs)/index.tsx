@@ -1,8 +1,10 @@
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Colors } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
+import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from '@react-navigation/native';
 import { useQuery, useRealm } from '@realm/react';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -96,6 +98,8 @@ export default function HomeScreen() {
 
   const routines = useQuery(Record).filtered('type == 2');
 
+  const { colors } = useTheme();
+  const { isDark, toggleTheme } = useThemeContext();
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [startedAd, setStartedAd] = useState(new Date());
@@ -130,13 +134,13 @@ export default function HomeScreen() {
     <>
       <ScrollView contentContainerStyle={styles.container}>
         <SafeAreaView>
-          <Text style={styles.title}>TLA</Text>
+          <Text style={{ ...styles.title, color: colors.text }}>TLA</Text>
         </SafeAreaView>
-        <View style={styles.card}>
+        <View style={{ ...styles.card, backgroundColor: colors.card }}>
           <View
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
           >
-            <Text style={styles.cardTitle}>
+            <Text style={{ ...styles.cardTitle, color: colors.text }}>
               {new Date().toLocaleString('ja-JP', { month: 'numeric', day: 'numeric' })} アセット
             </Text>
             <TouchableOpacity onPress={() => router.navigate('/setting-routine')}>
@@ -154,7 +158,7 @@ export default function HomeScreen() {
             absolute
           />
         </View>
-        <View style={{ ...styles.card, marginTop: 20 }}>
+        <View style={{ ...styles.card, marginTop: 20, backgroundColor: colors.card }}>
           <View
             style={{
               flexDirection: 'row',
@@ -162,11 +166,11 @@ export default function HomeScreen() {
               justifyContent: 'space-between',
               marginBottom: 10,
               borderBottomWidth: 2,
-              borderBottomColor: 'lightgray',
+              borderBottomColor: colors.border,
             }}
           >
-            <Text style={{ ...styles.cardTitle }}>今日の稼働</Text>
-            <Text style={styles.text}>
+            <Text style={{ ...styles.cardTitle, color: colors.text }}>今日の稼働</Text>
+            <Text style={{ ...styles.text, color: colors.text }}>
               合計 {totalHours}時間{totalMinutes}分
             </Text>
           </View>
@@ -179,18 +183,28 @@ export default function HomeScreen() {
                 style={{
                   ...styles.sectionListItemView,
                   borderBottomWidth: index + 1 === records.length ? 0 : 1,
+                  borderBottomColor: colors.border,
                 }}
               >
-                <Text style={{ fontSize: 16 }}>{item.title}</Text>
+                <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
                     {item.startedAt.toLocaleTimeString('ja-JP', {
                       hour: 'numeric',
                       minute: 'numeric',
                     })}
                   </Text>
-                  <Text style={{ fontSize: 16, fontWeight: 'bold', paddingHorizontal: 5 }}>〜</Text>
-                  <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                      paddingHorizontal: 5,
+                      color: colors.text,
+                    }}
+                  >
+                    〜
+                  </Text>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
                     {item.endedAt.toLocaleTimeString('ja-JP', {
                       hour: 'numeric',
                       minute: 'numeric',
@@ -202,8 +216,10 @@ export default function HomeScreen() {
           />
         </View>
         <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
-            <Text style={styles.cardTitle}>可処分時間割合</Text>
+          <View
+            style={{ ...styles.card, width: screenWidth / 2 - 30, backgroundColor: colors.card }}
+          >
+            <Text style={{ ...styles.cardTitle, color: colors.text }}>可処分時間割合</Text>
             <View
               style={{
                 flexDirection: 'row',
@@ -220,7 +236,11 @@ export default function HomeScreen() {
                 tintColor="#00e0ff"
                 backgroundColor="#3d5875"
               >
-                {fill => <Text style={styles.percentText}>{Math.trunc(fill)}%</Text>}
+                {fill => (
+                  <Text style={{ ...styles.percentText, color: colors.text }}>
+                    {Math.trunc(fill)}%
+                  </Text>
+                )}
               </AnimatedCircularProgress>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -228,8 +248,10 @@ export default function HomeScreen() {
               <Text style={{ fontWeight: 'bold', color: 'gray' }}>13%</Text>
             </View>
           </View>
-          <View style={{ ...styles.card, width: screenWidth / 2 - 30 }}>
-            <Text style={styles.cardTitle}>稼働時間割合</Text>
+          <View
+            style={{ ...styles.card, width: screenWidth / 2 - 30, backgroundColor: colors.card }}
+          >
+            <Text style={{ ...styles.cardTitle, color: colors.text }}>稼働時間割合</Text>
             <View
               style={{
                 flexDirection: 'row',
@@ -246,7 +268,11 @@ export default function HomeScreen() {
                 tintColor="#00e0ff"
                 backgroundColor="#3d5875"
               >
-                {fill => <Text style={styles.percentText}>{Math.trunc(fill)}%</Text>}
+                {fill => (
+                  <Text style={{ ...styles.percentText, color: colors.text }}>
+                    {Math.trunc(fill)}%
+                  </Text>
+                )}
               </AnimatedCircularProgress>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -263,23 +289,31 @@ export default function HomeScreen() {
         visible={visible}
         onRequestClose={() => setVisible(false)}
       >
-        <View style={{ alignItems: 'flex-end' }}>
+        <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
           <Ionicons
             name="close-circle-outline"
             size={26}
-            color="black"
+            color="gray"
             style={{ padding: 10 }}
             onPress={() => setVisible(false)}
           />
         </View>
-        <View style={{ justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View
+          style={{
+            alignItems: 'center',
+            height: '100%',
+            padding: 20,
+            backgroundColor: colors.card,
+          }}
+        >
           <View style={{ width: '100%' }}>
-            <Text style={styles.title}>稼働追加</Text>
+            <Text style={{ ...styles.title, color: colors.text }}>稼働追加</Text>
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 16, paddingBottom: 5 }}>項目</Text>
+              <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>項目</Text>
               <TextInput
                 defaultValue={title}
                 style={{
+                  color: colors.text,
                   width: '100%',
                   borderColor: 'lightgray',
                   borderWidth: 1,
@@ -290,12 +324,8 @@ export default function HomeScreen() {
                 onChangeText={value => setTitle(value)}
               />
             </View>
-            <View
-              style={{
-                marginBottom: 20,
-              }}
-            >
-              <Text style={{ fontSize: 16, paddingBottom: 5 }}>時間</Text>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>時間</Text>
               <View
                 style={{
                   flexDirection: 'row',
@@ -305,6 +335,7 @@ export default function HomeScreen() {
               >
                 <DateTimePicker
                   value={startedAd}
+                  themeVariant={isDark ? 'dark' : 'light'}
                   mode="time"
                   display="spinner"
                   style={{ flex: 1, marginRight: 10 }}
@@ -314,9 +345,10 @@ export default function HomeScreen() {
                     setStartedAd(date);
                   }}
                 />
-                <Text style={{ textAlign: 'center', padding: 10 }}>〜</Text>
+                <Text style={{ textAlign: 'center', padding: 10, color: colors.text }}>〜</Text>
                 <DateTimePicker
                   value={endedAt}
+                  themeVariant={isDark ? 'dark' : 'light'}
                   mode="time"
                   display="spinner"
                   style={{ flex: 1, marginRight: 10 }}

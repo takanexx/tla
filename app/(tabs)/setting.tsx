@@ -85,7 +85,7 @@ export default function SettingScreen() {
                 onValueChange={value => {
                   toggleTheme();
                   realm.write(() => {
-                    user.theme = isDark ? 'dark' : 'light'; // ユーザーのテーマを更新
+                    user.theme = value ? 'dark' : 'light'; // ユーザーのテーマを更新
                   });
                 }}
               />

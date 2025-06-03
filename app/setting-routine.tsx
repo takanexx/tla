@@ -1,7 +1,9 @@
 import { Colors } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
+import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from '@react-navigation/native';
 import { useQuery, useRealm } from '@realm/react';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -28,6 +30,8 @@ const SettingRoutine = () => {
   }
   const user = users[0];
 
+  const { colors } = useTheme();
+  const { isDark, toggleTheme } = useThemeContext();
   const [title, setTitle] = useState('');
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
@@ -87,7 +91,7 @@ const SettingRoutine = () => {
           headerRight: () => {
             return (
               <TouchableOpacity onPress={() => setVisible(true)}>
-                <Ionicons name="add-circle-outline" size={22} />
+                <Ionicons name="add-circle-outline" size={22} color={'gray'} />
               </TouchableOpacity>
             );
           },
@@ -96,7 +100,7 @@ const SettingRoutine = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={{ marginTop: 10 }}>
           <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティン</Text>
-          <View style={styles.card}>
+          <View style={{ ...styles.card, backgroundColor: colors.card }}>
             {routines.length === 0 ? (
               <View
                 style={{
@@ -105,7 +109,9 @@ const SettingRoutine = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Text style={{ fontSize: 16 }}>固定ルーティンはまだありません</Text>
+                <Text style={{ fontSize: 16, color: colors.text }}>
+                  固定ルーティンはまだありません
+                </Text>
               </View>
             ) : (
               <FlatList
@@ -117,9 +123,10 @@ const SettingRoutine = () => {
                     style={{
                       ...styles.sectionListItemView,
                       borderBottomWidth: routines.length === index + 1 ? 0 : 1,
+                      borderBottomColor: colors.border,
                     }}
                   >
-                    <Text style={{ fontSize: 16 }}>{item.title}</Text>
+                    <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
                     <View
                       style={{
                         justifyContent: 'center',
@@ -127,14 +134,16 @@ const SettingRoutine = () => {
                         alignItems: 'center',
                       }}
                     >
-                      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
                         {item.startedAt.toLocaleTimeString('ja-JP', {
                           hour: 'numeric',
                           minute: 'numeric',
                         })}
                       </Text>
-                      <Text style={{ fontSize: 16, paddingHorizontal: 5 }}>〜</Text>
-                      <Text style={{ fontSize: 16, fontWeight: 'bold' }}>
+                      <Text style={{ fontSize: 16, paddingHorizontal: 5, color: colors.text }}>
+                        〜
+                      </Text>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
                         {item.endedAt.toLocaleTimeString('ja-JP', {
                           hour: 'numeric',
                           minute: 'numeric',
@@ -151,7 +160,7 @@ const SettingRoutine = () => {
                           setVisible(true);
                         }}
                       >
-                        <Ionicons name="ellipsis-vertical" size={18} />
+                        <Ionicons name="ellipsis-vertical" size={18} color={'gray'} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -173,20 +182,27 @@ const SettingRoutine = () => {
         <View
           style={{
             height: 'auto',
-            backgroundColor: 'white',
+            backgroundColor: colors.card,
             marginTop: 'auto',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             paddingBottom: 40,
           }}
         >
-          <View style={{ alignItems: 'flex-end', padding: 10, paddingBottom: 0 }}>
+          <View
+            style={{
+              alignItems: 'flex-end',
+              padding: 10,
+              paddingBottom: 0,
+            }}
+          >
             <TouchableOpacity onPress={() => resetState()}>
-              <Ionicons name="close-circle-outline" size={26} color="black" />
+              <Ionicons name="close-circle-outline" size={26} color="gray" />
             </TouchableOpacity>
           </View>
           <View
             style={{
+              backgroundColor: colors.card,
               justifyContent: 'center',
               alignItems: 'center',
               paddingHorizontal: 30,
@@ -195,7 +211,9 @@ const SettingRoutine = () => {
           >
             <View style={{ width: '100%' }}>
               <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>ルーティーン名</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
+                  ルーティーン名
+                </Text>
                 <TextInput
                   placeholder="ルーティーンの名前を入力"
                   style={{
@@ -204,14 +222,14 @@ const SettingRoutine = () => {
                     borderRadius: 10,
                     padding: 10,
                     fontSize: 16,
-                    backgroundColor: '#fff',
+                    color: colors.text,
                   }}
                   value={title}
                   onChangeText={text => setTitle(text)}
                 />
               </View>
               <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5 }}>時間</Text>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>時間</Text>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -220,6 +238,7 @@ const SettingRoutine = () => {
                   }}
                 >
                   <DateTimePicker
+                    themeVariant={isDark ? 'dark' : 'light'}
                     value={startedAt}
                     mode="time"
                     display="spinner"
@@ -229,8 +248,9 @@ const SettingRoutine = () => {
                       setStartedAt(date);
                     }}
                   />
-                  <Text>〜</Text>
+                  <Text style={{ color: colors.text }}>〜</Text>
                   <DateTimePicker
+                    themeVariant={isDark ? 'dark' : 'light'}
                     value={endedAt}
                     mode="time"
                     display="spinner"
@@ -271,7 +291,6 @@ const SettingRoutine = () => {
                     borderRadius: 10,
                     borderColor: 'red',
                     borderWidth: 1,
-                    backgroundColor: 'white',
                     marginTop: 30,
                   }}
                   onPress={() => {
