@@ -1,5 +1,6 @@
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Record } from '@/lib/realmSchema';
+import { useThemeContext } from '@/Themecontext';
 import { useTheme } from '@react-navigation/native';
 import { useQuery } from '@realm/react';
 import { Fragment, useState } from 'react';
@@ -8,6 +9,7 @@ import { CalendarList, LocaleConfig } from 'react-native-calendars';
 
 export default function ScheduleScreen() {
   const { colors } = useTheme();
+  const { isDark } = useThemeContext();
   const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
   const records = useQuery(Record).filtered(
     'type == 1 and startedAt >= $0 and startedAt <= $1',
@@ -40,9 +42,11 @@ export default function ScheduleScreen() {
       <SafeAreaView>
         <Fragment>
           <CalendarList
+            key={isDark ? 'dark' : 'light'} // 動的にカレンダーのスタイルが切り替わるフラグ
             theme={{
               backgroundColor: colors.card,
               calendarBackground: colors.card,
+              dayTextColor: colors.text,
               // @ts-ignore
               'stylesheet.calendar.header': {
                 dayTextAtIndex0: {

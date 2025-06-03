@@ -1,3 +1,4 @@
+import Banner from '@/components/Banner';
 import { Colors } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
@@ -19,6 +20,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 const SettingRoutine = () => {
   const router = useRouter();
@@ -168,6 +170,9 @@ const SettingRoutine = () => {
               />
             )}
           </View>
+        </View>
+        <View style={{ marginTop: 30, alignItems: 'center' }}>
+          <Banner size={BannerAdSize.LARGE_BANNER} />
         </View>
       </ScrollView>
       <Modal

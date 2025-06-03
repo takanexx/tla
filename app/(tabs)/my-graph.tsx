@@ -1,3 +1,4 @@
+import Banner from '@/components/Banner';
 import { Colors } from '@/constants/Colors';
 import { Exam, ExamResult, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
@@ -22,6 +23,7 @@ import {
   View,
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -152,150 +154,159 @@ export default function MyGraphScreen() {
 
   if (!exam) {
     return (
-      <View style={{ padding: 20 }}>
+      <>
         <SafeAreaView>
-          <Text style={styles.title}>試験データ</Text>
+          <Text style={{ ...styles.title, paddingHorizontal: 20 }}>試験データ</Text>
+          <Banner />
         </SafeAreaView>
-        <View
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            marginTop: 60,
-          }}
-        >
-          <Text style={{ fontSize: 18, color: 'gray' }}>試験データがありません</Text>
-          <TouchableOpacity
-            style={{
-              paddingHorizontal: 30,
-              paddingVertical: 10,
-              borderRadius: 5,
-              backgroundColor: Colors.light.tint,
-              marginTop: 20,
-            }}
-            onPress={() => setVisible(true)}
-          >
-            <Text style={{ fontWeight: 'bold', color: '#fff' }}>試験データを作成</Text>
-          </TouchableOpacity>
-        </View>
-        <Modal
-          animationType="slide"
-          presentationStyle="pageSheet"
-          visible={visible}
-          onRequestClose={() => setVisible(false)}
-          style={{ backgroundColor: colors.card }}
-        >
-          <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
-            <Ionicons
-              name="close-circle-outline"
-              size={26}
-              color={'gray'}
-              style={{ padding: 10 }}
-              onPress={() => setVisible(false)}
-            />
-          </View>
+        <View style={{ padding: 20 }}>
           <View
             style={{
+              justifyContent: 'center',
               alignItems: 'center',
-              padding: 20,
-              height: '100%',
-              backgroundColor: colors.card,
+              marginTop: 60,
             }}
           >
-            <View style={{ width: '100%' }}>
-              <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験名</Text>
-                <TextInput
-                  defaultValue={title}
-                  style={{
-                    width: '100%',
-                    borderColor: 'lightgray',
-                    borderWidth: 1,
-                    borderRadius: 10,
-                    padding: 8,
-                    fontSize: 16,
-                    color: colors.text,
-                  }}
-                  onChangeText={text => setTitle(text)}
-                />
-              </View>
-              <View
-                style={{
-                  marginBottom: 20,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験日</Text>
-                <DateTimePicker
-                  themeVariant={isDark ? 'dark' : 'light'}
-                  value={date}
-                  mode="date"
-                  locale="ja-JP"
-                  onChange={(event, value) => {
-                    if (!value) return;
-                    setDate(value);
-                  }}
-                />
-              </View>
-
-              <View
-                style={{
-                  marginBottom: 20,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>点数</Text>
-                <TextInput
-                  defaultValue=""
-                  keyboardType="numeric"
-                  style={{
-                    color: colors.text,
-                    width: 120,
-                    borderColor: 'lightgray',
-                    borderWidth: 1,
-                    borderRadius: 10,
-                    padding: 8,
-                    fontSize: 16,
-                  }}
-                  onChangeText={text => setScore(Number(text))}
-                />
-              </View>
-            </View>
-            <View style={{ width: '100%' }}>
-              <TouchableOpacity
-                style={{
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 5,
-                  backgroundColor: Colors.light.tint,
-                  marginTop: 20,
-                }}
-                onPress={onCreateExam}
-              >
-                <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center' }}>
-                  追加する
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <Text style={{ fontSize: 18, color: 'gray' }}>試験データがありません</Text>
+            <TouchableOpacity
+              style={{
+                paddingHorizontal: 30,
+                paddingVertical: 10,
+                borderRadius: 5,
+                backgroundColor: Colors.light.tint,
+                marginTop: 20,
+              }}
+              onPress={() => setVisible(true)}
+            >
+              <Text style={{ fontWeight: 'bold', color: '#fff' }}>試験データを作成</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
-      </View>
+          <Modal
+            animationType="slide"
+            presentationStyle="pageSheet"
+            visible={visible}
+            onRequestClose={() => setVisible(false)}
+            style={{ backgroundColor: colors.card }}
+          >
+            <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
+              <Ionicons
+                name="close-circle-outline"
+                size={26}
+                color={'gray'}
+                style={{ padding: 10 }}
+                onPress={() => setVisible(false)}
+              />
+            </View>
+            <View
+              style={{
+                alignItems: 'center',
+                padding: 20,
+                height: '100%',
+                backgroundColor: colors.card,
+              }}
+            >
+              <View style={{ width: '100%' }}>
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験名</Text>
+                  <TextInput
+                    defaultValue={title}
+                    style={{
+                      width: '100%',
+                      borderColor: 'lightgray',
+                      borderWidth: 1,
+                      borderRadius: 10,
+                      padding: 8,
+                      fontSize: 16,
+                      color: colors.text,
+                    }}
+                    onChangeText={text => setTitle(text)}
+                  />
+                </View>
+                <View
+                  style={{
+                    marginBottom: 20,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験日</Text>
+                  <DateTimePicker
+                    themeVariant={isDark ? 'dark' : 'light'}
+                    value={date}
+                    mode="date"
+                    locale="ja-JP"
+                    onChange={(event, value) => {
+                      if (!value) return;
+                      setDate(value);
+                    }}
+                  />
+                </View>
+
+                <View
+                  style={{
+                    marginBottom: 20,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>点数</Text>
+                  <TextInput
+                    defaultValue=""
+                    keyboardType="numeric"
+                    style={{
+                      color: colors.text,
+                      width: 120,
+                      borderColor: 'lightgray',
+                      borderWidth: 1,
+                      borderRadius: 10,
+                      padding: 8,
+                      fontSize: 16,
+                    }}
+                    onChangeText={text => setScore(Number(text))}
+                  />
+                </View>
+              </View>
+              <Banner size={BannerAdSize.LARGE_BANNER} />
+              <View style={{ width: '100%' }}>
+                <TouchableOpacity
+                  style={{
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    borderRadius: 5,
+                    backgroundColor: Colors.light.tint,
+                    marginTop: 20,
+                  }}
+                  onPress={onCreateExam}
+                >
+                  <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center' }}>
+                    追加する
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      </>
     );
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <SafeAreaView style={{ justifyContent: 'space-between', flexDirection: 'row', zIndex: 1 }}>
-        <Text style={{ ...styles.title, color: colors.text }}>試験データ</Text>
-        <TouchableOpacity onPress={() => setVisibleEditModal(true)}>
+        <Text style={{ ...styles.title, color: colors.text, paddingHorizontal: 20 }}>
+          試験データ
+        </Text>
+        <TouchableOpacity
+          onPress={() => setVisibleEditModal(true)}
+          style={{ paddingHorizontal: 20 }}
+        >
           <Ionicons name="ellipsis-vertical" size={24} color="gray" style={{ marginBottom: 10 }} />
         </TouchableOpacity>
       </SafeAreaView>
 
-      <View>
+      <View style={{ paddingHorizontal: 20 }}>
         <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>最近の試験結果</Text>
         <View style={{ ...styles.card, backgroundColor: colors.card }}>
           <View style={{ ...styles.sectionListItemView, borderBottomColor: colors.border }}>
@@ -321,7 +332,10 @@ export default function MyGraphScreen() {
         </View>
       </View>
 
-      <View style={{ marginTop: 20 }}>
+      <View style={{ marginTop: 20, alignItems: 'center' }}>
+        <Banner size={BannerAdSize.LARGE_BANNER} />
+      </View>
+      <View style={{ marginTop: 20, paddingHorizontal: 20 }}>
         <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>グラフ</Text>
         <View style={{ ...styles.card, backgroundColor: colors.card }}>
           <Text style={{ fontWeight: 'bold', color: 'gray', padding: 5, textAlign: 'center' }}>
@@ -351,7 +365,7 @@ export default function MyGraphScreen() {
         </View>
       </View>
 
-      <View style={{ marginTop: 20 }}>
+      <View style={{ marginTop: 20, paddingHorizontal: 20 }}>
         <View style={{ alignItems: 'center', flexDirection: 'row' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>結果一覧</Text>
@@ -620,6 +634,7 @@ export default function MyGraphScreen() {
               />
             </View>
           </View>
+          <Banner size={BannerAdSize.LARGE_BANNER} />
           <View style={{ width: '100%' }}>
             <TouchableOpacity
               style={{
@@ -688,7 +703,7 @@ export default function MyGraphScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    // padding: 20,
     paddingBottom: 100,
   },
   title: {
