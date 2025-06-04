@@ -13,7 +13,7 @@ export default function ScheduleScreen() {
   const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
   const records = useQuery(Record).filtered(
     'type == 1 and startedAt >= $0 and startedAt <= $1',
-    new Date(selected),
+    new Date(`${selected} 00:00:00`),
     new Date(`${selected} 23:59:59`),
   );
   LocaleConfig.locales['ja'] = {

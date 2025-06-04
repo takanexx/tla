@@ -1,3 +1,4 @@
+import SvgPieChart from '@/components/SvgPieChart';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Colors } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
@@ -20,52 +21,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { PieChart } from 'react-native-chart-kit';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
 const screenWidth = Dimensions.get('window').width;
-
-const data = [
-  {
-    name: '睡眠',
-    population: 8,
-    color: 'rgba(0, 0, 255, 0.6)',
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 15,
-  },
-  {
-    name: '仕事',
-    population: 8,
-    color: 'rgba(0, 0, 255, 0.8)',
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 15,
-  },
-  {
-    name: '勉強',
-    population: 2,
-    color: 'rgba(255, 0, 0, 0.6)',
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 15,
-  },
-  {
-    name: 'その他',
-    population: 6,
-    color: 'rgba(255, 0, 0, 0.8)',
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 15,
-  },
-];
-
-const chartConfig = {
-  backgroundGradientFrom: '#1E2923',
-  backgroundGradientFromOpacity: 0,
-  backgroundGradientTo: '#08130D',
-  backgroundGradientToOpacity: 0.5,
-  color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
-  strokeWidth: 2, // optional, default 3
-  barPercentage: 0.5,
-  useShadowColorFromDataset: false, // optional
-};
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -78,7 +36,7 @@ export default function HomeScreen() {
   const user = users[0];
   const records = useQuery(Record).filtered(
     'type == 1 and startedAt >= $0 and startedAt <= $1',
-    new Date(new Date().toLocaleDateString('sv-SE')), // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
+    new Date(`${new Date().toLocaleDateString('sv-SE')} 00:00:00`), // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
     new Date(`${new Date().toLocaleDateString('sv-SE')} 23:59:59`),
   );
 
@@ -97,9 +55,25 @@ export default function HomeScreen() {
   }
 
   const routines = useQuery(Record).filtered('type == 2');
+  let d = routines.map((routine, index) => {
+    return {
+      label: routine.title,
+      start: routine.startedAt.getHours(),
+      end: routine.endedAt.getHours(),
+      color: '#00CED1',
+    };
+  });
+  records.forEach(record => {
+    d.push({
+      label: record.title,
+      start: record.startedAt.getHours(),
+      end: record.endedAt.getHours(),
+      color: '#FF8C00',
+    });
+  });
 
   const { colors } = useTheme();
-  const { isDark, toggleTheme } = useThemeContext();
+  const { isDark } = useThemeContext();
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [startedAd, setStartedAd] = useState(new Date());
@@ -147,17 +121,9 @@ export default function HomeScreen() {
               <Ionicons name="settings-outline" size={26} color={'gray'} />
             </TouchableOpacity>
           </View>
-          <PieChart
-            data={data}
-            width={screenWidth - 40}
-            height={250}
-            chartConfig={chartConfig}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-          />
+          <SvgPieChart chartData={d} />
         </View>
+
         <View style={{ ...styles.card, marginTop: 20, backgroundColor: colors.card }}>
           <View
             style={{
