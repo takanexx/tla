@@ -1,16 +1,37 @@
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
+import { Colors } from '@/constants/Colors';
 import { Record } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@react-navigation/native';
-import { useQuery } from '@realm/react';
+import { useQuery, useRealm } from '@realm/react';
 import { Fragment, useState } from 'react';
-import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  FlatList,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { CalendarList, LocaleConfig } from 'react-native-calendars';
 
 export default function ScheduleScreen() {
+  const realm = useRealm();
   const { colors } = useTheme();
   const { isDark } = useThemeContext();
   const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
+  const [visible, setVisible] = useState(false);
+  const [title, setTitle] = useState('');
+  const [startedAt, setStartedAt] = useState(new Date());
+  const [endedAt, setEndedAt] = useState(new Date());
+  const [editRecord, setEditRecord] = useState<Record | null>(null);
+
   const records = useQuery(Record).filtered(
     'type == 1 and startedAt >= $0 and startedAt <= $1',
     new Date(`${selected} 00:00:00`),
@@ -36,6 +57,28 @@ export default function ScheduleScreen() {
     locale: 'jp',
   };
   LocaleConfig.defaultLocale = 'ja';
+
+  const onEditRecord = () => {
+    if (!editRecord) return;
+
+    realm.write(() => {
+      editRecord.title = title;
+      editRecord.startedAt = startedAt;
+      editRecord.endedAt = endedAt;
+    });
+
+    resetState();
+  };
+
+  // リセット処理
+  const resetState = () => {
+    setVisible(false);
+    // 値を初期化
+    setTitle('');
+    setEndedAt(new Date());
+    setStartedAt(new Date());
+    setEditRecord(null);
+  };
 
   return (
     <>
@@ -69,18 +112,6 @@ export default function ScheduleScreen() {
         </Fragment>
       </SafeAreaView>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定スケジュール</Text>
-        <View style={styles.card}>
-          <View style={styles.sectionListItemView}>
-            <Text style={{ fontSize: 16 }}>睡眠</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>23時〜5時</Text>
-          </View>
-          <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
-            <Text style={{ fontSize: 16 }}>仕事</Text>
-            <Text style={{ fontSize: 16, fontWeight: 'bold' }}>9時〜18時</Text>
-          </View>
-        </View> */}
-
         <View style={{}}>
           <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>
             {`${new Date(selected).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })} `}
@@ -136,6 +167,18 @@ export default function ScheduleScreen() {
                           minute: 'numeric',
                         })}
                       </Text>
+                      <TouchableOpacity
+                        style={{ paddingLeft: 10 }}
+                        onPress={() => {
+                          setEditRecord(item);
+                          setTitle(item.title);
+                          setStartedAt(item.startedAt);
+                          setEndedAt(item.endedAt);
+                          setVisible(true);
+                        }}
+                      >
+                        <Ionicons name="ellipsis-vertical" size={18} color={'gray'} />
+                      </TouchableOpacity>
                     </View>
                   </View>
                 )}
@@ -145,6 +188,108 @@ export default function ScheduleScreen() {
         </View>
       </ScrollView>
       <FloatingActionButton />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={visible}
+        onRequestClose={() => resetState()}
+      >
+        <TouchableWithoutFeedback onPress={() => resetState()}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
+        </TouchableWithoutFeedback>
+        <View
+          style={{
+            height: 'auto',
+            backgroundColor: colors.card,
+            marginTop: 'auto',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            paddingBottom: 40,
+          }}
+        >
+          <View style={{ alignItems: 'flex-end', padding: 10, paddingBlock: 0 }}>
+            <TouchableOpacity onPress={() => resetState()}>
+              <Ionicons name="close-circle-outline" size={26} color={'gray'} />
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              backgroundColor: colors.card,
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingHorizontal: 30,
+              paddingVertical: 20,
+            }}
+          >
+            <View style={{ width: '100%' }}>
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>項目</Text>
+                <TextInput
+                  placeholder=""
+                  style={{
+                    borderWidth: 1,
+                    borderColor: 'lightgray',
+                    borderRadius: 10,
+                    padding: 10,
+                    fontSize: 16,
+                    color: colors.text,
+                  }}
+                  value={title}
+                  onChangeText={text => setTitle(text)}
+                />
+              </View>
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>時間</Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <DateTimePicker
+                    themeVariant={isDark ? 'dark' : 'light'}
+                    value={startedAt}
+                    mode="time"
+                    display="spinner"
+                    style={{ flex: 1, marginRight: 10 }}
+                    onChange={(event, date) => {
+                      if (!date) return;
+                      setStartedAt(date);
+                    }}
+                  />
+                  <Text style={{ color: colors.text }}>〜</Text>
+                  <DateTimePicker
+                    themeVariant={isDark ? 'dark' : 'light'}
+                    value={endedAt}
+                    mode="time"
+                    display="spinner"
+                    style={{ flex: 1, marginLeft: 10 }}
+                    onChange={(event, date) => {
+                      if (!date) return;
+                      setEndedAt(date);
+                    }}
+                  />
+                </View>
+              </View>
+              <TouchableOpacity
+                style={{
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  borderRadius: 10,
+                  backgroundColor: Colors.light.tint,
+                  marginTop: 30,
+                }}
+                onPress={() => onEditRecord()}
+              >
+                <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+                  保存する
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }
@@ -158,6 +303,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     paddingHorizontal: 10,
+    paddingVertical: 3,
   },
   cardTitle: {
     fontWeight: 'bold',

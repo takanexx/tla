@@ -33,7 +33,7 @@ const SettingRoutine = () => {
   const user = users[0];
 
   const { colors } = useTheme();
-  const { isDark, toggleTheme } = useThemeContext();
+  const { isDark } = useThemeContext();
   const [title, setTitle] = useState('');
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
