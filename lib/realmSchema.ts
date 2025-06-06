@@ -65,6 +65,7 @@ export class Record extends Realm.Object<Record> {
   userId!: string;
   title!: string;
   type!: number;
+  date!: Date;
   startedAt!: Date;
   endedAt!: Date;
 
@@ -73,6 +74,7 @@ export class Record extends Realm.Object<Record> {
       userId?: string;
       title?: string;
       type?: number; // 1: 稼働, 2: 固定
+      date?: Date;
       startedAt?: Date;
       endedAt?: Date;
     } = {},
@@ -82,6 +84,7 @@ export class Record extends Realm.Object<Record> {
       userId: params.userId,
       title: params.title || '',
       type: params.type || 1,
+      date: params.date || null,
       startedAt: params.startedAt,
       endedAt: params.endedAt,
     };
@@ -95,6 +98,7 @@ export class Record extends Realm.Object<Record> {
       userId: 'string',
       title: 'string',
       type: 'int',
+      date: { type: 'date', optional: true },
       startedAt: 'date',
       endedAt: 'date',
     },

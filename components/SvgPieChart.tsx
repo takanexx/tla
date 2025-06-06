@@ -33,10 +33,10 @@ function polarToCartesian(cx: number, cy: number, r: number, angleInDegrees: num
 }
 
 type Props = {
-  chartData: Array<ChartData>;
+  chartData: Array<ChartDataType>;
 };
 
-type ChartData = {
+export type ChartDataType = {
   label: string;
   start: number;
   end: number;

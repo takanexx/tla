@@ -1,4 +1,4 @@
-import SvgPieChart from '@/components/SvgPieChart';
+import SvgPieChart, { ChartDataType } from '@/components/SvgPieChart';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Colors } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
@@ -55,14 +55,36 @@ export default function HomeScreen() {
   }
 
   const routines = useQuery(Record).filtered('type == 2');
-  let d = routines.map((routine, index) => {
-    return {
-      label: routine.title,
-      start: routine.startedAt.getHours(),
-      end: routine.endedAt.getHours(),
-      color: '#00CED1',
-    };
+
+  let d: Array<ChartDataType> = [];
+  routines.forEach((routine, index) => {
+    const start = routine.startedAt.getHours();
+    const end = routine.endedAt.getHours();
+
+    if (start > end) {
+      // 22〜6時見たいなものは、22〜24時と0〜6時みたいに分ける
+      d.push({
+        label: routine.title,
+        start: start,
+        end: 24,
+        color: '#00CED1',
+      });
+      d.push({
+        label: routine.title,
+        start: 0,
+        end: end,
+        color: '#00CED1',
+      });
+    } else {
+      d.push({
+        label: routine.title,
+        start: start > end ? 0 : start,
+        end: end,
+        color: '#00CED1',
+      });
+    }
   });
+
   records.forEach(record => {
     d.push({
       label: record.title,
