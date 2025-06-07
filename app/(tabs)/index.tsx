@@ -300,7 +300,6 @@ export default function HomeScreen() {
             alignItems: 'center',
             height: '100%',
             padding: 20,
-            marginTop: 10,
             backgroundColor: colors.card,
           }}
         >

@@ -156,7 +156,9 @@ export default function MyGraphScreen() {
     return (
       <>
         <SafeAreaView>
-          <Text style={{ ...styles.title, paddingHorizontal: 20 }}>試験データ</Text>
+          <Text style={{ ...styles.title, paddingHorizontal: 20, color: colors.text }}>
+            試験データ
+          </Text>
           <Banner />
         </SafeAreaView>
         <View style={{ padding: 20 }}>

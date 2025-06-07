@@ -78,7 +78,21 @@ export default function SettingScreen() {
               <Text
                 style={{ fontSize: 16, fontWeight: 'bold', paddingRight: 5, color: colors.text }}
               >
-                {isDark ? 'ダーク' : 'ライト'}
+                {isDark ? (
+                  <Ionicons
+                    name="moon"
+                    size={20}
+                    color={'#B771E5'}
+                    style={{ paddingHorizontal: 5 }}
+                  />
+                ) : (
+                  <Ionicons
+                    name="sunny"
+                    size={20}
+                    color={'#FF9D23'}
+                    style={{ paddingHorizontal: 5 }}
+                  />
+                )}
               </Text>
               <Switch
                 value={isDark}
