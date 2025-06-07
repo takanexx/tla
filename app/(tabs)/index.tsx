@@ -57,11 +57,14 @@ export default function HomeScreen() {
   const routines = useQuery(Record).filtered('type == 2');
 
   let d: Array<ChartDataType> = [];
+  let freeTime = 24;
   routines.forEach((routine, index) => {
-    const start = routine.startedAt.getHours();
-    const end = routine.endedAt.getHours();
+    const start =
+      Math.floor((routine.startedAt.getHours() + routine.startedAt.getMinutes() / 60) * 100) / 100;
+    const end =
+      Math.floor((routine.endedAt.getHours() + routine.endedAt.getMinutes() / 60) * 100) / 100;
 
-    if (start > end) {
+    if (routine.startedAt.getHours() > routine.endedAt.getHours()) {
       // 22〜6時見たいなものは、22〜24時と0〜6時みたいに分ける
       d.push({
         label: routine.title,
@@ -69,29 +72,39 @@ export default function HomeScreen() {
         end: 24,
         color: '#00CED1',
       });
+      freeTime = freeTime - Math.floor((24 - start) * 100) / 100;
       d.push({
         label: routine.title,
         start: 0,
         end: end,
         color: '#00CED1',
       });
+      freeTime = freeTime - Math.floor(end * 100) / 100;
     } else {
+      // 日付を跨がない場合
+      freeTime = freeTime - Math.floor((end - start) * 100) / 100;
       d.push({
         label: routine.title,
-        start: start > end ? 0 : start,
+        start: start,
         end: end,
         color: '#00CED1',
       });
     }
   });
 
+  let investTime = 0;
   records.forEach(record => {
+    const start =
+      Math.floor((record.startedAt.getHours() + record.startedAt.getMinutes() / 60) * 100) / 100;
+    const end =
+      Math.floor((record.endedAt.getHours() + record.endedAt.getMinutes() / 60) * 100) / 100;
     d.push({
       label: record.title,
-      start: record.startedAt.getHours(),
-      end: record.endedAt.getHours(),
+      start: start,
+      end: end,
       color: '#FF8C00',
     });
+    investTime = investTime + (end - start);
   });
 
   const { colors } = useTheme();
@@ -103,6 +116,14 @@ export default function HomeScreen() {
 
   const onPressFunction = () => {
     setVisible(true);
+  };
+
+  const resetState = () => {
+    // 値をリセット
+    setTitle('');
+    setStartedAd(new Date());
+    setEndedAt(new Date());
+    setVisible(false);
   };
 
   // 稼働追加時の処理
@@ -120,10 +141,7 @@ export default function HomeScreen() {
     });
 
     // 値をリセット
-    setTitle('');
-    setStartedAd(new Date());
-    setEndedAt(new Date());
-    setVisible(false);
+    resetState();
   };
 
   return (
@@ -157,9 +175,11 @@ export default function HomeScreen() {
               borderBottomColor: colors.border,
             }}
           >
-            <Text style={{ ...styles.cardTitle, color: colors.text }}>今日の稼働</Text>
-            <Text style={{ ...styles.text, color: colors.text }}>
-              合計 {totalHours}時間{totalMinutes}分
+            <Text style={{ ...styles.cardTitle, color: colors.text, paddingVertical: 5 }}>
+              今日の投資時間
+            </Text>
+            <Text style={{ ...styles.cardTitle, color: colors.text, fontSize: 22 }}>
+              {totalHours}時間{totalMinutes}分
             </Text>
           </View>
           <FlatList
@@ -204,10 +224,35 @@ export default function HomeScreen() {
           />
         </View>
         <View style={{ marginTop: 20, flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View
-            style={{ ...styles.card, width: screenWidth / 2 - 30, backgroundColor: colors.card }}
-          >
-            <Text style={{ ...styles.cardTitle, color: colors.text }}>可処分時間割合</Text>
+          <View style={{ ...styles.card, backgroundColor: colors.card, width: screenWidth - 40 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottomWidth: 2,
+                borderBottomColor: colors.border,
+              }}
+            >
+              <Text style={{ ...styles.cardTitle, color: colors.text }}>今日の投資時間割合</Text>
+              <Text style={{ ...styles.cardTitle, color: colors.text, fontSize: 22 }}>
+                {Math.floor((investTime / freeTime) * 100)}%
+              </Text>
+            </View>
+            <View style={{ paddingHorizontal: 40, paddingVertical: 20 }}>
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}
+              >
+                <Text style={{ ...styles.text, color: colors.text }}>隙間時間</Text>
+                <Text style={{ ...styles.text, color: colors.text }}>{freeTime}時間</Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ ...styles.text, color: colors.text }}>投資時間</Text>
+                <Text style={{ ...styles.text, color: colors.text }}>
+                  {totalHours}時間{totalMinutes}分
+                </Text>
+              </View>
+            </View>
             <View
               style={{
                 flexDirection: 'row',
@@ -217,10 +262,10 @@ export default function HomeScreen() {
               }}
             >
               <AnimatedCircularProgress
-                size={screenWidth / 2 - 70}
+                size={screenWidth / 2}
                 width={20}
                 rotation={0}
-                fill={13}
+                fill={Math.floor((investTime / freeTime) * 100)}
                 tintColor="#00e0ff"
                 backgroundColor="#3d5875"
               >
@@ -230,42 +275,6 @@ export default function HomeScreen() {
                   </Text>
                 )}
               </AnimatedCircularProgress>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontWeight: 'bold', color: 'gray' }}>3時間20分</Text>
-              <Text style={{ fontWeight: 'bold', color: 'gray' }}>13%</Text>
-            </View>
-          </View>
-          <View
-            style={{ ...styles.card, width: screenWidth / 2 - 30, backgroundColor: colors.card }}
-          >
-            <Text style={{ ...styles.cardTitle, color: colors.text }}>稼働時間割合</Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 10,
-              }}
-            >
-              <AnimatedCircularProgress
-                size={screenWidth / 2 - 70}
-                width={20}
-                rotation={0}
-                fill={78}
-                tintColor="#00e0ff"
-                backgroundColor="#3d5875"
-              >
-                {fill => (
-                  <Text style={{ ...styles.percentText, color: colors.text }}>
-                    {Math.trunc(fill)}%
-                  </Text>
-                )}
-              </AnimatedCircularProgress>
-            </View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontWeight: 'bold', color: 'gray' }}>2時間50分</Text>
-              <Text style={{ fontWeight: 'bold', color: 'gray' }}>78%</Text>
             </View>
           </View>
         </View>
@@ -275,7 +284,7 @@ export default function HomeScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
         visible={visible}
-        onRequestClose={() => setVisible(false)}
+        onRequestClose={() => resetState()}
       >
         <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
           <Ionicons
@@ -283,7 +292,7 @@ export default function HomeScreen() {
             size={26}
             color="gray"
             style={{ padding: 10 }}
-            onPress={() => setVisible(false)}
+            onPress={() => resetState()}
           />
         </View>
         <View
@@ -291,11 +300,12 @@ export default function HomeScreen() {
             alignItems: 'center',
             height: '100%',
             padding: 20,
+            marginTop: 10,
             backgroundColor: colors.card,
           }}
         >
           <View style={{ width: '100%' }}>
-            <Text style={{ ...styles.title, color: colors.text }}>稼働追加</Text>
+            <Text style={{ ...styles.title, color: colors.text }}>投資時間追加</Text>
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>項目</Text>
               <TextInput
@@ -376,6 +386,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     minHeight: '110%',
+    paddingBottom: 100,
   },
   card: {
     backgroundColor: 'white',
@@ -394,7 +405,6 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
-    marginVertical: 10,
   },
   circleContainer: {
     flexDirection: 'row',
