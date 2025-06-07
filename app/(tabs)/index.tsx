@@ -10,6 +10,7 @@ import { useQuery, useRealm } from '@realm/react';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   Dimensions,
   FlatList,
   Modal,
@@ -132,7 +133,10 @@ export default function HomeScreen() {
   const onAddRecord = () => {
     if (isError || title === '') return;
 
-    if (!realm.objects(Record).filtered('startedAt >= $0 and endedAt <= $0', startedAd).isEmpty()) {
+    if (!realm.objects(Record).filtered('startedAt <= $0 and endedAt >=$0', startedAd).isEmpty()) {
+      Alert.alert('', '追加しようとしている時間帯にすでに記録が存在しています', [
+        { text: 'OK', style: 'default' },
+      ]);
       return;
     }
 
@@ -248,42 +252,48 @@ export default function HomeScreen() {
                 {Math.floor((investTime / freeTime) * 100)}%
               </Text>
             </View>
-            <View style={{ paddingHorizontal: 40, paddingVertical: 20 }}>
+            <View style={{ padding: 10 }}>
               <View
-                style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
               >
-                <Text style={{ ...styles.text, color: colors.text }}>隙間時間</Text>
-                <Text style={{ ...styles.text, color: colors.text }}>{freeTime}時間</Text>
+                <View style={{ width: '50%' }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      paddingBottom: 5,
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, color: colors.text }}>隙間時間</Text>
+                    <Text style={{ fontSize: 16, color: colors.text }}>{freeTime}時間</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 16, color: colors.text }}>投資時間</Text>
+                    <Text style={{ fontSize: 16, color: colors.text }}>
+                      {totalHours}時間{totalMinutes}分
+                    </Text>
+                  </View>
+                </View>
+
+                <AnimatedCircularProgress
+                  size={screenWidth / 3}
+                  width={20}
+                  rotation={0}
+                  fill={Math.floor((investTime / freeTime) * 100)}
+                  tintColor="#00e0ff"
+                  backgroundColor="#3d5875"
+                >
+                  {fill => (
+                    <Text style={{ ...styles.percentText, color: colors.text }}>
+                      {Math.trunc(fill)}%
+                    </Text>
+                  )}
+                </AnimatedCircularProgress>
               </View>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ ...styles.text, color: colors.text }}>投資時間</Text>
-                <Text style={{ ...styles.text, color: colors.text }}>
-                  {totalHours}時間{totalMinutes}分
-                </Text>
-              </View>
-            </View>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 10,
-              }}
-            >
-              <AnimatedCircularProgress
-                size={screenWidth / 2}
-                width={20}
-                rotation={0}
-                fill={Math.floor((investTime / freeTime) * 100)}
-                tintColor="#00e0ff"
-                backgroundColor="#3d5875"
-              >
-                {fill => (
-                  <Text style={{ ...styles.percentText, color: colors.text }}>
-                    {Math.trunc(fill)}%
-                  </Text>
-                )}
-              </AnimatedCircularProgress>
             </View>
           </View>
         </View>
