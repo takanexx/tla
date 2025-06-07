@@ -26,6 +26,7 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const screenWidth = Dimensions.get('window').width;
 
 export default function HomeScreen() {
+  const [today, setToday] = useState(new Date());
   const router = useRouter();
   const realm = useRealm();
   const users = useQuery(User);
@@ -36,8 +37,8 @@ export default function HomeScreen() {
   const user = users[0];
   const records = useQuery(Record).filtered(
     'type == 1 and startedAt >= $0 and startedAt <= $1',
-    new Date(`${new Date().toLocaleDateString('sv-SE')} 00:00:00`), // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
-    new Date(`${new Date().toLocaleDateString('sv-SE')} 23:59:59`),
+    new Date(`${today.toLocaleDateString('sv-SE')} 00:00:00`), // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
+    new Date(`${today.toLocaleDateString('sv-SE')} 23:59:59`),
   );
 
   let totalHours = 0;
@@ -65,7 +66,7 @@ export default function HomeScreen() {
       Math.floor((routine.endedAt.getHours() + routine.endedAt.getMinutes() / 60) * 100) / 100;
 
     if (routine.startedAt.getHours() > routine.endedAt.getHours()) {
-      // 22〜6時見たいなものは、22〜24時と0〜6時みたいに分ける
+      // 22〜6時みたいなものは、22〜24時と0〜6時みたいに分ける
       d.push({
         label: routine.title,
         start: start,
@@ -113,6 +114,7 @@ export default function HomeScreen() {
   const [title, setTitle] = useState('');
   const [startedAd, setStartedAd] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
+  const [isError, setIsError] = useState(false);
 
   const onPressFunction = () => {
     setVisible(true);
@@ -128,11 +130,18 @@ export default function HomeScreen() {
 
   // 稼働追加時の処理
   const onAddRecord = () => {
+    if (isError || title === '') return;
+
+    if (!realm.objects(Record).filtered('startedAt >= $0 and endedAt <= $0', startedAd).isEmpty()) {
+      return;
+    }
+
     realm.write(() => {
       realm.create(
         'Record',
         Record.generate({
           userId: user._id.toString(),
+          date: new Date(),
           title: title,
           startedAt: startedAd,
           endedAt: endedAt,
@@ -155,7 +164,7 @@ export default function HomeScreen() {
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
           >
             <Text style={{ ...styles.cardTitle, color: colors.text }}>
-              {new Date().toLocaleString('ja-JP', { month: 'numeric', day: 'numeric' })} アセット
+              {today.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric' })} アセット
             </Text>
             <TouchableOpacity onPress={() => router.navigate('/setting-routine')}>
               <Ionicons name="settings-outline" size={26} color={'gray'} />
@@ -312,13 +321,20 @@ export default function HomeScreen() {
                 style={{
                   color: colors.text,
                   width: '100%',
-                  borderColor: 'lightgray',
+                  borderColor: isError ? 'red' : 'lightgray',
                   borderWidth: 1,
                   borderRadius: 10,
                   padding: 8,
                   fontSize: 16,
                 }}
-                onChangeText={value => setTitle(value)}
+                onChangeText={value => {
+                  if (value === '') {
+                    setIsError(true);
+                  } else {
+                    setIsError(false);
+                    setTitle(value);
+                  }
+                }}
               />
             </View>
             <View style={{ marginBottom: 20 }}>

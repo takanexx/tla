@@ -8,6 +8,7 @@ import { useTheme } from '@react-navigation/native';
 import { useQuery, useRealm } from '@realm/react';
 import { Fragment, useState } from 'react';
 import {
+  Alert,
   FlatList,
   Modal,
   SafeAreaView,
@@ -207,7 +208,35 @@ export default function ScheduleScreen() {
             paddingBottom: 40,
           }}
         >
-          <View style={{ alignItems: 'flex-end', padding: 10, paddingBlock: 0 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: 10,
+              paddingBlock: 0,
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                if (!editRecord) return;
+                Alert.alert('削除しますか？', '', [
+                  { text: 'キャンセル', style: 'cancel' },
+                  {
+                    text: '削除する',
+                    style: 'destructive',
+                    onPress: () => {
+                      realm.write(() => {
+                        realm.delete(editRecord);
+                      });
+                      resetState();
+                    },
+                  },
+                ]);
+              }}
+            >
+              <Ionicons name="trash-outline" size={26} color={'red'} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => resetState()}>
               <Ionicons name="close-circle-outline" size={26} color={'gray'} />
             </TouchableOpacity>
