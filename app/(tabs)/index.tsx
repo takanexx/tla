@@ -133,7 +133,7 @@ export default function HomeScreen() {
   const onAddRecord = () => {
     if (isError || title === '') return;
 
-    if (!realm.objects(Record).filtered('startedAt <= $0 and endedAt >=$0', startedAd).isEmpty()) {
+    if (!realm.objects(Record).filtered('startedAt <= $0 and endedAt >= $0', startedAd).isEmpty()) {
       Alert.alert('', '追加しようとしている時間帯にすでに記録が存在しています', [
         { text: 'OK', style: 'default' },
       ]);
@@ -167,9 +167,14 @@ export default function HomeScreen() {
           <View
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
           >
-            <Text style={{ ...styles.cardTitle, color: colors.text }}>
-              {today.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric' })} アセット
-            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={{ ...styles.cardTitle, color: colors.text }}>
+                {today.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric' })} アセット
+              </Text>
+              <TouchableOpacity onPress={() => setToday(new Date())}>
+                <Ionicons name="reload" size={22} color={'gray'} />
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity onPress={() => router.navigate('/setting-routine')}>
               <Ionicons name="settings-outline" size={26} color={'gray'} />
             </TouchableOpacity>

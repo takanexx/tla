@@ -1,3 +1,4 @@
+import Banner from '@/components/Banner';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Colors } from '@/constants/Colors';
 import { Record } from '@/lib/realmSchema';
@@ -21,6 +22,7 @@ import {
   View,
 } from 'react-native';
 import { CalendarList, LocaleConfig } from 'react-native-calendars';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 export default function ScheduleScreen() {
   const realm = useRealm();
@@ -84,6 +86,7 @@ export default function ScheduleScreen() {
   return (
     <>
       <SafeAreaView>
+        <Banner size={BannerAdSize.FULL_BANNER} />
         <Fragment>
           <CalendarList
             key={isDark ? 'dark' : 'light'} // 動的にカレンダーのスタイルが切り替わるフラグ
@@ -185,6 +188,9 @@ export default function ScheduleScreen() {
                 )}
               />
             )}
+          </View>
+          <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+            <Banner size={BannerAdSize.LARGE_BANNER} />
           </View>
         </View>
       </ScrollView>

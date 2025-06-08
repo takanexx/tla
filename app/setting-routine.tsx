@@ -45,6 +45,16 @@ const SettingRoutine = () => {
 
   // ルーティンの作成処理
   const onAddRoutineRecord = () => {
+    if (
+      !realm.objects(Record).filtered('startedAt <= $0 and endedAt >= $0', startedAt).isEmpty() ||
+      !realm.objects(Record).filtered('startedAt <= $0 and endedAt >= $0', endedAt).isEmpty()
+    ) {
+      Alert.alert('', '追加しようとしている時間帯にすでにルーティーンが存在しています', [
+        { text: 'OK', style: 'default' },
+      ]);
+      return;
+    }
+
     realm.write(() => {
       realm.create(
         'Record',
@@ -63,6 +73,22 @@ const SettingRoutine = () => {
   // ルーティンの編集処理
   const onEditRoutineRecord = () => {
     if (!editRoutine) return;
+
+    if (
+      !realm
+        .objects(Record)
+        .filtered('startedAt <= $0 and endedAt >= $0 and _id != $1', startedAt, editRoutine._id)
+        .isEmpty() ||
+      !realm
+        .objects(Record)
+        .filtered('startedAt <= $0 and endedAt >= $0 and _id != $1', endedAt, editRoutine._id)
+        .isEmpty()
+    ) {
+      Alert.alert('', '編集した時間帯にすでにルーティーンが存在しています', [
+        { text: 'OK', style: 'default' },
+      ]);
+      return;
+    }
 
     realm.write(() => {
       editRoutine.title = title;
