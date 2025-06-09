@@ -53,7 +53,6 @@ export default function HomeScreen() {
       if (!routines.isEmpty()) {
         routines.forEach((r, index) => {
           const record = realm.objects(Record).filtered('routineId == $0', r._id.toString());
-          console.log(record);
           if (!record.isEmpty()) return;
 
           if (r.startedAt.getHours() > r.endedAt.getHours()) {
@@ -65,6 +64,7 @@ export default function HomeScreen() {
                   userId: user._id.toString(),
                   routineId: r._id.toString(),
                   title: r.title,
+                  color: r.color,
                   date: new Date(),
                   startedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0),
                   endedAt: new Date(
@@ -85,6 +85,7 @@ export default function HomeScreen() {
                   userId: user._id.toString(),
                   routineId: r._id.toString(),
                   title: r.title,
+                  color: r.color,
                   date: new Date(),
                   startedAt: new Date(
                     now.getFullYear(),
@@ -105,6 +106,7 @@ export default function HomeScreen() {
                   userId: user._id.toString(),
                   routineId: r._id.toString(),
                   title: r.title,
+                  color: r.color,
                   date: new Date(),
                   startedAt: new Date(
                     now.getFullYear(),
@@ -207,7 +209,7 @@ export default function HomeScreen() {
       label: record.title,
       start: start,
       end: end,
-      color: '#FF8C00',
+      color: record.color,
     });
     investTime = investTime + (end - start);
   });
@@ -219,6 +221,7 @@ export default function HomeScreen() {
   const [startedAd, setStartedAd] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [isError, setIsError] = useState(false);
+  const [routineColor, setRoutineColor] = useState('red');
 
   const onPressFunction = () => {
     setVisible(true);
@@ -229,6 +232,7 @@ export default function HomeScreen() {
     setTitle('');
     setStartedAd(new Date());
     setEndedAt(new Date());
+    setRoutineColor('red');
     setVisible(false);
   };
 
@@ -250,6 +254,7 @@ export default function HomeScreen() {
           userId: user._id.toString(),
           date: new Date(),
           title: title,
+          color: routineColor,
           startedAt: startedAd,
           endedAt: endedAt,
         }),
@@ -450,6 +455,34 @@ export default function HomeScreen() {
                   }
                 }}
               />
+            </View>
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 10 }}>
+                {['red', 'blue', 'yellow', 'green', 'orange', 'purple'].map(color => {
+                  return (
+                    <TouchableOpacity
+                      key={color}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        backgroundColor: color,
+                        marginHorizontal: 10,
+                        borderColor: Colors.light.tint,
+                        borderWidth: color === routineColor ? 5 : 0,
+                        borderRadius: 10,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                      onPress={() => setRoutineColor(color)}
+                    >
+                      {color === routineColor && (
+                        <Ionicons name="checkmark" size={28} color={Colors.light.tint} />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>時間</Text>
