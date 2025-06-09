@@ -105,6 +105,20 @@ export default function SettingScreen() {
               />
             </View>
           </View>
+          <View style={{ ...styles.sectionListItemView, borderBottomColor: colors.border }}>
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                width: '100%',
+                alignItems: 'center',
+              }}
+              onPress={() => router.navigate('/setting-routine')}
+            >
+              <Text style={{ fontSize: 16, color: colors.text }}>ルーティーン</Text>
+              <Ionicons name="chevron-forward" color={colors.text} size={14} />
+            </TouchableOpacity>
+          </View>
           <View style={{ ...styles.sectionListItemView, borderBottomWidth: 0 }}>
             <Text style={{ fontSize: 16, color: colors.text }}>プラン</Text>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>

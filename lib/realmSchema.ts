@@ -63,18 +63,20 @@ export class User extends Realm.Object<User> {
 export class Record extends Realm.Object<Record> {
   _id!: Realm.BSON.ObjectId;
   userId!: string;
+  routineId!: string;
   title!: string;
-  type!: number;
   date!: Date;
+  color!: string;
   startedAt!: Date;
   endedAt!: Date;
 
   static generate(
     params: {
       userId?: string;
+      routineId?: string;
       title?: string;
-      type?: number; // 1: 稼働, 2: 固定
       date?: Date;
+      color?: string;
       startedAt?: Date;
       endedAt?: Date;
     } = {},
@@ -82,9 +84,10 @@ export class Record extends Realm.Object<Record> {
     return {
       _id: new Realm.BSON.ObjectId(),
       userId: params.userId,
+      routineId: params.routineId || null,
       title: params.title || '',
-      type: params.type || 1,
       date: params.date || null,
+      color: params.color,
       startedAt: params.startedAt,
       endedAt: params.endedAt,
     };
@@ -95,10 +98,50 @@ export class Record extends Realm.Object<Record> {
     primaryKey: '_id',
     properties: {
       _id: 'objectId',
+      userId: { type: 'string', indexed: true },
+      routineId: { type: 'string', optional: true, indexed: true },
+      title: 'string',
+      date: { type: 'date', optional: true, indexed: true },
+      color: 'string',
+      startedAt: 'date',
+      endedAt: 'date',
+    },
+  };
+}
+
+export class Routine extends Realm.Object<Routine> {
+  _id!: Realm.BSON.ObjectId;
+  userId!: string;
+  title!: string;
+  color!: string;
+  startedAt!: Date;
+  endedAt!: Date;
+
+  static generate(params: {
+    userId: string;
+    title?: string;
+    color?: string;
+    startedAt?: Date;
+    endedAt?: Date;
+  }) {
+    return {
+      _id: new Realm.BSON.ObjectId(),
+      userId: params.userId,
+      title: params.title || '',
+      color: params.color || 'red',
+      startedAt: params.startedAt,
+      endedAt: params.endedAt,
+    };
+  }
+
+  static schema: Realm.ObjectSchema = {
+    name: 'Routine',
+    primaryKey: '_id',
+    properties: {
+      _id: 'objectId',
       userId: 'string',
       title: 'string',
-      type: 'int',
-      date: { type: 'date', optional: true },
+      color: 'string',
       startedAt: 'date',
       endedAt: 'date',
     },

@@ -1,6 +1,6 @@
 import Banner from '@/components/Banner';
 import { Colors } from '@/constants/Colors';
-import { Record, User } from '@/lib/realmSchema';
+import { Record, Routine, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -14,6 +14,7 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -35,19 +36,21 @@ const SettingRoutine = () => {
   const { colors } = useTheme();
   const { isDark } = useThemeContext();
   const [title, setTitle] = useState('');
+  const [routineColor, setRoutineColor] = useState('red');
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [visible, setVisible] = useState(false);
   const [modalType, setModalType] = useState('add');
-  const [editRoutine, setEditRoutine] = useState<Record | null>(null);
+  const [editRoutine, setEditRoutine] = useState<Routine | null>(null);
+  const [fromToday, setFromToday] = useState(false);
 
-  const routines = useQuery(Record).filtered('type == 2').sorted('startedAt');
+  const routines = useQuery(Routine).sorted('startedAt');
 
   // ルーティンの作成処理
-  const onAddRoutineRecord = () => {
+  const createRoutine = () => {
     if (
-      !realm.objects(Record).filtered('startedAt <= $0 and endedAt >= $0', startedAt).isEmpty() ||
-      !realm.objects(Record).filtered('startedAt <= $0 and endedAt >= $0', endedAt).isEmpty()
+      !realm.objects(Routine).filtered('startedAt <= $0 and endedAt >= $0', startedAt).isEmpty() ||
+      !realm.objects(Routine).filtered('startedAt <= $0 and endedAt >= $0', endedAt).isEmpty()
     ) {
       Alert.alert('', '追加しようとしている時間帯にすでにルーティーンが存在しています', [
         { text: 'OK', style: 'default' },
@@ -55,32 +58,111 @@ const SettingRoutine = () => {
       return;
     }
 
-    realm.write(() => {
+    const routine: Routine = realm.write(() =>
       realm.create(
-        'Record',
-        Record.generate({
+        'Routine',
+        Routine.generate({
           userId: user._id.toString(),
           title: title,
-          type: 2, // 固定ルーティン
+          color: routineColor,
           startedAt: startedAt,
           endedAt: endedAt,
-        }),
-      );
-    });
+        }) as unknown as Routine,
+      ),
+    );
+
+    // 「今日から」フラグが立っている場合
+    if (fromToday) {
+      // 今日のルーティンレコードを作成
+      const now = new Date();
+
+      if (routine.startedAt.getHours() > routine.endedAt.getHours()) {
+        // 日付を跨ぐ場合（22時〜6時のようなルーティン）は、22時〜24時と0時〜6時のように分割して保存する
+        realm.write(() => {
+          realm.create(
+            'Record',
+            Record.generate({
+              userId: user._id.toString(),
+              routineId: routine._id.toString(),
+              title: routine.title,
+              color: routine.color,
+              date: new Date(),
+              startedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0),
+              endedAt: new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                routine.endedAt.getHours(),
+                routine.endedAt.getMinutes(),
+              ),
+            }),
+          );
+        });
+
+        realm.write(() => {
+          realm.create(
+            'Record',
+            Record.generate({
+              userId: user._id.toString(),
+              routineId: routine._id.toString(),
+              title: routine.title,
+              color: routine.color,
+              date: new Date(),
+              startedAt: new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                routine.startedAt.getHours(),
+                routine.startedAt.getMinutes(),
+              ),
+              endedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59),
+            }),
+          );
+        });
+      } else {
+        // 日付を跨がない場合
+        realm.write(() => {
+          realm.create(
+            'Record',
+            Record.generate({
+              userId: user._id.toString(),
+              routineId: routine._id.toString(),
+              title: routine.title,
+              color: routine.color,
+              date: new Date(),
+              startedAt: new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                routine.startedAt.getHours(),
+                routine.startedAt.getMinutes(),
+              ),
+              endedAt: new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                routine.endedAt.getHours(),
+                routine.endedAt.getMinutes(),
+              ),
+            }),
+          );
+        });
+      }
+    }
     resetState();
   };
 
   // ルーティンの編集処理
-  const onEditRoutineRecord = () => {
+  const editRoutineHandler = () => {
     if (!editRoutine) return;
 
     if (
       !realm
-        .objects(Record)
+        .objects(Routine)
         .filtered('startedAt <= $0 and endedAt >= $0 and _id != $1', startedAt, editRoutine._id)
         .isEmpty() ||
       !realm
-        .objects(Record)
+        .objects(Routine)
         .filtered('startedAt <= $0 and endedAt >= $0 and _id != $1', endedAt, editRoutine._id)
         .isEmpty()
     ) {
@@ -92,6 +174,7 @@ const SettingRoutine = () => {
 
     realm.write(() => {
       editRoutine.title = title;
+      editRoutine.color = routineColor;
       editRoutine.startedAt = startedAt;
       editRoutine.endedAt = endedAt;
     });
@@ -105,9 +188,11 @@ const SettingRoutine = () => {
     setModalType('add');
     // 値を初期化
     setTitle('');
+    setRoutineColor('red');
     setEndedAt(new Date());
     setStartedAt(new Date());
     setEditRoutine(null);
+    setFromToday(false);
   };
 
   return (
@@ -143,7 +228,7 @@ const SettingRoutine = () => {
               </View>
             ) : (
               <FlatList
-                data={useQuery(Record).filtered('type == 2').sorted('startedAt')}
+                data={routines}
                 keyExtractor={item => item._id.toString()}
                 scrollEnabled={false}
                 renderItem={({ item, index }) => (
@@ -154,7 +239,17 @@ const SettingRoutine = () => {
                       borderBottomColor: colors.border,
                     }}
                   >
-                    <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
+                      <View
+                        style={{
+                          backgroundColor: item.color,
+                          width: 15,
+                          height: 15,
+                          marginHorizontal: 5,
+                        }}
+                      ></View>
+                    </View>
                     <View
                       style={{
                         justifyContent: 'center',
@@ -183,6 +278,7 @@ const SettingRoutine = () => {
                           setModalType('edit');
                           setEditRoutine(item);
                           setTitle(item.title);
+                          setRoutineColor(item.color);
                           setStartedAt(item.startedAt);
                           setEndedAt(item.endedAt);
                           setVisible(true);
@@ -260,6 +356,34 @@ const SettingRoutine = () => {
                 />
               </View>
               <View style={{ marginBottom: 20 }}>
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 10 }}>
+                  {['red', 'blue', 'yellow', 'green', 'orange', 'purple'].map(color => {
+                    return (
+                      <TouchableOpacity
+                        key={color}
+                        style={{
+                          width: 40,
+                          height: 40,
+                          backgroundColor: color,
+                          marginHorizontal: 10,
+                          borderColor: Colors.light.tint,
+                          borderWidth: color === routineColor ? 5 : 0,
+                          borderRadius: 10,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                        onPress={() => setRoutineColor(color)}
+                      >
+                        {color === routineColor && (
+                          <Ionicons name="checkmark" size={28} color={Colors.light.tint} />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+              <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>時間</Text>
                 <View
                   style={{
@@ -293,6 +417,19 @@ const SettingRoutine = () => {
                   />
                 </View>
               </View>
+              <View
+                style={{
+                  marginBottom: 20,
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                }}
+              >
+                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
+                  今日からルーティンをセットする
+                </Text>
+                <Switch value={fromToday} onValueChange={value => setFromToday(value)} />
+              </View>
               <TouchableOpacity
                 style={{
                   paddingHorizontal: 20,
@@ -303,9 +440,9 @@ const SettingRoutine = () => {
                 }}
                 onPress={() => {
                   if (modalType === 'edit') {
-                    onEditRoutineRecord();
+                    editRoutineHandler();
                   } else {
-                    onAddRoutineRecord();
+                    createRoutine();
                   }
                 }}
               >
@@ -326,7 +463,7 @@ const SettingRoutine = () => {
                   }}
                   onPress={() => {
                     Alert.alert(
-                      '試験データを削除しますか？',
+                      'ルーティンを削除しますか？',
                       '削除したデータは復元できません。',
                       [
                         {

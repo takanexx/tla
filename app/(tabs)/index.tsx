@@ -1,16 +1,17 @@
 import SvgPieChart, { ChartDataType } from '@/components/SvgPieChart';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Colors } from '@/constants/Colors';
-import { Record, User } from '@/lib/realmSchema';
+import { Record, Routine, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@react-navigation/native';
 import { useQuery, useRealm } from '@realm/react';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Alert,
+  AppState,
   Dimensions,
   FlatList,
   Modal,
@@ -28,8 +29,110 @@ const screenWidth = Dimensions.get('window').width;
 
 export default function HomeScreen() {
   const [today, setToday] = useState(new Date());
+  const lastCheckRef = useRef<Date>(new Date());
   const router = useRouter();
   const realm = useRealm();
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      console.log('AppState changed to', nextAppState);
+      // アプリが起動された場合のイベント
+      if (nextAppState !== 'active') return;
+
+      // 今日の日付をセットし直す
+      const now = new Date();
+      setToday(now);
+
+      const lastCheck = lastCheckRef.current;
+      const crossedMidnight = now.getDate() !== lastCheck.getDate() && now.getHours() >= 0;
+
+      // 日付が変わった場合の処理
+      if (!crossedMidnight) return;
+      // 固定ルーティンが存在している場合は当日のレコードとして保存しておく
+      const routines = realm.objects(Routine);
+      if (!routines.isEmpty()) {
+        routines.forEach((r, index) => {
+          const record = realm.objects(Record).filtered('routineId == $0', r._id.toString());
+          console.log(record);
+          if (!record.isEmpty()) return;
+
+          if (r.startedAt.getHours() > r.endedAt.getHours()) {
+            // 22〜6時みたいなものは、22〜24時と0〜6時みたいに分ける
+            realm.write(() => {
+              realm.create(
+                'Record',
+                Record.generate({
+                  userId: user._id.toString(),
+                  routineId: r._id.toString(),
+                  title: r.title,
+                  date: new Date(),
+                  startedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0),
+                  endedAt: new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                    r.endedAt.getHours(),
+                    r.endedAt.getMinutes(),
+                  ),
+                }),
+              );
+            });
+
+            realm.write(() => {
+              realm.create(
+                'Record',
+                Record.generate({
+                  userId: user._id.toString(),
+                  routineId: r._id.toString(),
+                  title: r.title,
+                  date: new Date(),
+                  startedAt: new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                    r.startedAt.getHours(),
+                    r.startedAt.getMinutes(),
+                  ),
+                  endedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59),
+                }),
+              );
+            });
+          } else {
+            realm.write(() => {
+              realm.create(
+                'Record',
+                Record.generate({
+                  userId: user._id.toString(),
+                  routineId: r._id.toString(),
+                  title: r.title,
+                  date: new Date(),
+                  startedAt: new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                    r.startedAt.getHours(),
+                    r.startedAt.getMinutes(),
+                  ),
+                  endedAt: new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                    r.endedAt.getHours(),
+                    r.endedAt.getMinutes(),
+                  ),
+                }),
+              );
+            });
+          }
+        });
+      }
+
+      lastCheckRef.current = now;
+    });
+
+    return () => subscription.remove();
+  }, []);
+
   const users = useQuery(User);
   if (users.isEmpty() || !users[0]) {
     // ユーザーが存在しない場合は、エラー画面を表示する
@@ -37,7 +140,7 @@ export default function HomeScreen() {
   }
   const user = users[0];
   const records = useQuery(Record).filtered(
-    'type == 1 and startedAt >= $0 and startedAt <= $1',
+    'routineId == null and startedAt >= $0 and startedAt <= $1',
     new Date(`${today.toLocaleDateString('sv-SE')} 00:00:00`), // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
     new Date(`${today.toLocaleDateString('sv-SE')} 23:59:59`),
   );
@@ -56,7 +159,7 @@ export default function HomeScreen() {
     totalMinutes = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
   }
 
-  const routines = useQuery(Record).filtered('type == 2');
+  const routines = useQuery(Record).filtered('routineId != null');
 
   let d: Array<ChartDataType> = [];
   let freeTime = 24;
@@ -72,14 +175,14 @@ export default function HomeScreen() {
         label: routine.title,
         start: start,
         end: 24,
-        color: '#00CED1',
+        color: routine.color,
       });
       freeTime = freeTime - Math.floor((24 - start) * 100) / 100;
       d.push({
         label: routine.title,
         start: 0,
         end: end,
-        color: '#00CED1',
+        color: routine.color,
       });
       freeTime = freeTime - Math.floor(end * 100) / 100;
     } else {
@@ -89,7 +192,7 @@ export default function HomeScreen() {
         label: routine.title,
         start: start,
         end: end,
-        color: '#00CED1',
+        color: routine.color,
       });
     }
   });
@@ -164,21 +267,15 @@ export default function HomeScreen() {
           <Text style={{ ...styles.title, color: colors.text }}>TLA</Text>
         </SafeAreaView>
         <View style={{ ...styles.card, backgroundColor: colors.card }}>
-          <View
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center' }}
+            onPress={() => router.navigate('/today-asset')}
           >
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ ...styles.cardTitle, color: colors.text }}>
-                {today.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric' })} アセット
-              </Text>
-              <TouchableOpacity onPress={() => setToday(new Date())}>
-                <Ionicons name="reload" size={22} color={'gray'} />
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity onPress={() => router.navigate('/setting-routine')}>
-              <Ionicons name="settings-outline" size={26} color={'gray'} />
-            </TouchableOpacity>
-          </View>
+            <Text style={{ ...styles.cardTitle, color: colors.text }}>
+              {today.toLocaleString('ja-JP', { month: 'numeric', day: 'numeric' })} アセット
+            </Text>
+            <Ionicons name="chevron-forward" size={24} color={'gray'} />
+          </TouchableOpacity>
           <SvgPieChart chartData={d} />
         </View>
 
@@ -274,7 +371,9 @@ export default function HomeScreen() {
                     }}
                   >
                     <Text style={{ fontSize: 16, color: colors.text }}>隙間時間</Text>
-                    <Text style={{ fontSize: 16, color: colors.text }}>{freeTime}時間</Text>
+                    <Text style={{ fontSize: 16, color: colors.text }}>
+                      {Math.floor(freeTime * 10) / 10}時間
+                    </Text>
                   </View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Text style={{ fontSize: 16, color: colors.text }}>投資時間</Text>

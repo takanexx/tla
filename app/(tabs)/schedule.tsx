@@ -36,7 +36,7 @@ export default function ScheduleScreen() {
   const [editRecord, setEditRecord] = useState<Record | null>(null);
 
   const records = useQuery(Record).filtered(
-    'type == 1 and startedAt >= $0 and startedAt <= $1',
+    'routineId == null and startedAt >= $0 and startedAt <= $1',
     new Date(`${selected} 00:00:00`),
     new Date(`${selected} 23:59:59`),
   );

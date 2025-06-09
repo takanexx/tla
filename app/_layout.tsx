@@ -7,7 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { Exam, ExamResult, Record, User } from '@/lib/realmSchema';
+import { Exam, ExamResult, Record, Routine, User } from '@/lib/realmSchema';
 import { ThemeProviderCustom, useThemeContext } from '@/Themecontext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -30,7 +30,7 @@ export default function RootLayout() {
 
   return (
     <RealmProvider
-      schema={[User, Record, Exam, ExamResult]}
+      schema={[User, Record, Routine, Exam, ExamResult]}
       // Set to true only for development purposes
       // This will delete the Realm database if a migration is needed.
       // In production, you should handle migrations properly.
@@ -43,6 +43,7 @@ export default function RootLayout() {
             <Stack.Screen name="+not-found" />
             <Stack.Screen name="create-user" />
             <Stack.Screen name="setting-routine" />
+            <Stack.Screen name="today-asset" />
             {/* <Stack.Screen
             name="user-edit"
             options={{ headerBackTitle: '戻る', headerTitle: 'ユーザー情報' }}
