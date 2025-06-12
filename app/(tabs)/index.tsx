@@ -52,7 +52,13 @@ export default function HomeScreen() {
       const routines = realm.objects(Routine);
       if (!routines.isEmpty()) {
         routines.forEach((r, index) => {
-          const record = realm.objects(Record).filtered('routineId == $0', r._id.toString());
+          const record = realm
+            .objects(Record)
+            .filtered(
+              'routineId == $0 and date >= $1',
+              r._id.toString(),
+              new Date(now.getFullYear(), now.getMonth(), now.getDate()),
+            );
           if (!record.isEmpty()) return;
 
           if (r.startedAt.getHours() > r.endedAt.getHours()) {

@@ -41,7 +41,18 @@ const SettingRoutine = () => {
   const [visible, setVisible] = useState(false);
   const [editRoutine, setEditRoutine] = useState<Record | null>(null);
 
-  const routines = useQuery(Record).filtered('routineId != null').sorted('startedAt');
+  const routines = useQuery(Record)
+    .filtered(
+      'routineId != null and date >= $0',
+      new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+    )
+    .sorted('startedAt');
+  const records = useQuery(Record)
+    .filtered(
+      'routineId == null and date >= $0',
+      new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+    )
+    .sorted('startedAt');
 
   // ルーティンの編集処理
   const editRoutineHandler = () => {
@@ -160,9 +171,72 @@ const SettingRoutine = () => {
             />
           </View>
         </View>
-        <View style={{ marginTop: 10 }}>
+        <View style={{ marginTop: 30 }}>
           <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>投資した時間</Text>
-          <View style={{ ...styles.card, backgroundColor: colors.card }}></View>
+          <View style={{ ...styles.card, backgroundColor: colors.card }}>
+            <FlatList
+              data={records}
+              keyExtractor={item => item._id.toString()}
+              scrollEnabled={false}
+              renderItem={({ item, index }) => (
+                <View
+                  style={{
+                    ...styles.sectionListItemView,
+                    borderBottomWidth: routines.length === index + 1 ? 0 : 1,
+                    borderBottomColor: colors.border,
+                  }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
+                    <View
+                      style={{
+                        backgroundColor: item.color,
+                        width: 15,
+                        height: 15,
+                        marginHorizontal: 5,
+                      }}
+                    ></View>
+                  </View>
+                  <View
+                    style={{
+                      justifyContent: 'center',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+                      {item.startedAt.toLocaleTimeString('ja-JP', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                      })}
+                    </Text>
+                    <Text style={{ fontSize: 16, paddingHorizontal: 5, color: colors.text }}>
+                      〜
+                    </Text>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+                      {item.endedAt.toLocaleTimeString('ja-JP', {
+                        hour: 'numeric',
+                        minute: 'numeric',
+                      })}
+                    </Text>
+                    <TouchableOpacity
+                      style={{ paddingLeft: 10 }}
+                      onPress={() => {
+                        setEditRoutine(item);
+                        setTitle(item.title);
+                        setRoutineColor(item.color);
+                        setStartedAt(item.startedAt);
+                        setEndedAt(item.endedAt);
+                        setVisible(true);
+                      }}
+                    >
+                      <Ionicons name="ellipsis-vertical" size={18} color={'gray'} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            />
+          </View>
         </View>
         <View style={{ marginTop: 30, alignItems: 'center' }}>
           <Banner size={BannerAdSize.LARGE_BANNER} />
