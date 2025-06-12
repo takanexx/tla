@@ -1,3 +1,4 @@
+import Banner from '@/components/Banner';
 import SvgPieChart, { ChartDataType } from '@/components/SvgPieChart';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import { Colors } from '@/constants/Colors';
@@ -24,6 +25,7 @@ import {
   View,
 } from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -288,6 +290,10 @@ export default function HomeScreen() {
             <Ionicons name="chevron-forward" size={24} color={'gray'} />
           </TouchableOpacity>
           <SvgPieChart chartData={d} />
+        </View>
+
+        <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 20 }}>
+          <Banner size={BannerAdSize.LARGE_BANNER} />
         </View>
 
         <View style={{ ...styles.card, marginTop: 20, backgroundColor: colors.card }}>

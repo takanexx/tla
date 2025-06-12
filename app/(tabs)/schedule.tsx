@@ -83,6 +83,19 @@ export default function ScheduleScreen() {
     setEditRecord(null);
   };
 
+  let markedDates: { [date: string]: { marked: boolean } } = {};
+  const recordsForMonth = useQuery(Record).filtered(
+    'routineId == null and date >= $0 and date < $1',
+    new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1),
+  );
+  recordsForMonth.forEach(r => {
+    const date = r.date;
+    // ゼロパディングしないとCalendar側で表示されないのでゼロパディングしておく
+    let dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+    markedDates[dateStr] = { marked: true };
+  });
+
   return (
     <>
       <SafeAreaView>
@@ -110,6 +123,7 @@ export default function ScheduleScreen() {
               setSelected(day.dateString);
             }}
             markedDates={{
+              ...markedDates,
               [selected]: { selected: true, disableTouchEvent: true },
             }}
           />
