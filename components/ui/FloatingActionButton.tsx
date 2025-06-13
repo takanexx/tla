@@ -1,3 +1,4 @@
+import { Colors } from '@/constants/Colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -42,6 +43,6 @@ const styles = StyleSheet.create({
       width: 10,
       height: 10,
     },
-    backgroundColor: 'rgba(26, 100, 146, 0.9)',
+    backgroundColor: Colors.light.tint,
   },
 });

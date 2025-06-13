@@ -416,8 +416,8 @@ export default function HomeScreen() {
                   width={20}
                   rotation={0}
                   fill={Math.floor((investTime / freeTime) * 100)}
-                  tintColor="#00e0ff"
-                  backgroundColor="#3d5875"
+                  tintColor={Colors.light.tint}
+                  backgroundColor={isDark ? '#191e2c' : '#e7e7ea'}
                 >
                   {fill => (
                     <Text style={{ ...styles.percentText, color: colors.text }}>
