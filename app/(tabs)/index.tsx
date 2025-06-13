@@ -61,7 +61,15 @@ export default function HomeScreen() {
               r._id.toString(),
               new Date(now.getFullYear(), now.getMonth(), now.getDate()),
             );
+          // すでに対象のルーティンレコードが存在する場合は処理を行わなずにスキップ
           if (!record.isEmpty()) return;
+
+          // 日付指定のルーティンの場合
+          if (r.cycle === 'dayofwee') {
+            const cycleValAry = r.cycleValue.split(',');
+            // 今日の曜日が含まれていない場合はRecordを作成せずスキップ
+            if (!cycleValAry.includes(String(now.getDay()))) return;
+          }
 
           if (r.startedAt.getHours() > r.endedAt.getHours()) {
             // 22〜6時みたいなものは、22〜24時と0〜6時みたいに分ける
