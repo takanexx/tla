@@ -1,5 +1,5 @@
 import Banner from '@/components/Banner';
-import { Colors } from '@/constants/Colors';
+import { ChartColors, Colors } from '@/constants/Colors';
 import { getDayOfWeekStr } from '@/constants/date';
 import { convertCycleStr } from '@/lib/realModel';
 import { Record, Routine, User } from '@/lib/realmSchema';
@@ -475,10 +475,10 @@ const SettingRoutine = () => {
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 10 }}>
-                  {['red', 'blue', 'yellow', 'green', 'orange', 'purple'].map(color => {
+                  {ChartColors.map((color, index) => {
                     return (
                       <TouchableOpacity
-                        key={color}
+                        key={`color_${index}`}
                         style={{
                           width: 40,
                           height: 40,

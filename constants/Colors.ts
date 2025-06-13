@@ -24,3 +24,5 @@ export const Colors = {
     tabIconSelected: tintColorDark,
   },
 };
+
+export const ChartColors = ['#004971', '#4274a0', '#ffdc96', '#ffa467', '#ff7938', '#d94448'];

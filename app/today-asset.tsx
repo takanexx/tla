@@ -1,5 +1,5 @@
 import Banner from '@/components/Banner';
-import { Colors } from '@/constants/Colors';
+import { ChartColors, Colors } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
@@ -303,10 +303,10 @@ const SettingRoutine = () => {
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
                 <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 10 }}>
-                  {['red', 'blue', 'yellow', 'green', 'orange', 'purple'].map(color => {
+                  {ChartColors.map((color, i) => {
                     return (
                       <TouchableOpacity
-                        key={color}
+                        key={`color_${i}`}
                         style={{
                           width: 40,
                           height: 40,
