@@ -180,9 +180,79 @@ export default function ScheduleScreen() {
         </Fragment>
       </SafeAreaView>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={{}}>
-          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>
-            {`${new Date(selected).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })} `}
+        <View>
+          <View
+            style={{
+              ...styles.card,
+              backgroundColor: colors.card,
+              width: screenWidth - 40,
+              paddingVertical: 10,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottomWidth: 2,
+                borderBottomColor: colors.border,
+              }}
+            >
+              <Text style={{ ...styles.cardTitle, color: colors.text }}>
+                {`${new Date(selected).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' })} `}
+                の投資時間割合
+              </Text>
+              <Text style={{ ...styles.cardTitle, color: colors.text, fontSize: 22 }}>
+                {Math.floor((investTime / freeTime) * 100)}%
+              </Text>
+            </View>
+            <View style={{ padding: 10 }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <View style={{ width: '50%' }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      paddingBottom: 5,
+                    }}
+                  >
+                    <Text style={{ fontSize: 16, color: colors.text }}>隙間時間</Text>
+                    <Text style={{ fontSize: 16, color: colors.text }}>
+                      {Math.floor(freeTime * 10) / 10}時間
+                    </Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 16, color: colors.text }}>投資時間</Text>
+                    <Text style={{ fontSize: 16, color: colors.text }}>
+                      {totalHours}時間{totalMinutes}分
+                    </Text>
+                  </View>
+                </View>
+
+                <AnimatedCircularProgress
+                  size={screenWidth / 3}
+                  width={20}
+                  rotation={0}
+                  fill={Math.floor((investTime / freeTime) * 100)}
+                  tintColor={Colors.light.tint}
+                  backgroundColor={isDark ? '#191e2c' : '#e7e7ea'}
+                >
+                  {fill => (
+                    <Text style={{ ...styles.percentText, color: colors.text }}>
+                      {Math.trunc(fill)}%
+                    </Text>
+                  )}
+                </AnimatedCircularProgress>
+              </View>
+            </View>
+          </View>
+          <Text style={{ padding: 5, paddingTop: 20, fontWeight: 'bold', color: 'gray' }}>
             稼働したタスク
           </Text>
           <View style={{ ...styles.card, backgroundColor: colors.card }}>
@@ -252,77 +322,6 @@ export default function ScheduleScreen() {
                 )}
               />
             )}
-          </View>
-          <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-            <Banner size={BannerAdSize.LARGE_BANNER} />
-          </View>
-          <View
-            style={{
-              ...styles.card,
-              backgroundColor: colors.card,
-              width: screenWidth - 40,
-              paddingVertical: 10,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                borderBottomWidth: 2,
-                borderBottomColor: colors.border,
-              }}
-            >
-              <Text style={{ ...styles.cardTitle, color: colors.text }}>今日の投資時間割合</Text>
-              <Text style={{ ...styles.cardTitle, color: colors.text, fontSize: 22 }}>
-                {Math.floor((investTime / freeTime) * 100)}%
-              </Text>
-            </View>
-            <View style={{ padding: 10 }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <View style={{ width: '50%' }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      paddingBottom: 5,
-                    }}
-                  >
-                    <Text style={{ fontSize: 16, color: colors.text }}>隙間時間</Text>
-                    <Text style={{ fontSize: 16, color: colors.text }}>
-                      {Math.floor(freeTime * 10) / 10}時間
-                    </Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={{ fontSize: 16, color: colors.text }}>投資時間</Text>
-                    <Text style={{ fontSize: 16, color: colors.text }}>
-                      {totalHours}時間{totalMinutes}分
-                    </Text>
-                  </View>
-                </View>
-
-                <AnimatedCircularProgress
-                  size={screenWidth / 3}
-                  width={20}
-                  rotation={0}
-                  fill={Math.floor((investTime / freeTime) * 100)}
-                  tintColor={Colors.light.tint}
-                  backgroundColor={isDark ? '#191e2c' : '#e7e7ea'}
-                >
-                  {fill => (
-                    <Text style={{ ...styles.percentText, color: colors.text }}>
-                      {Math.trunc(fill)}%
-                    </Text>
-                  )}
-                </AnimatedCircularProgress>
-              </View>
-            </View>
           </View>
         </View>
       </ScrollView>
@@ -464,8 +463,7 @@ export default function ScheduleScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingBottom: 120,
-    // minHeight: '100%',
+    paddingBottom: 150,
   },
   card: {
     backgroundColor: 'white',

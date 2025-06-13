@@ -439,6 +439,7 @@ const SettingRoutine = () => {
                     {[0, 1, 2, 3, 4, 5, 6].map(dayOfWeek => {
                       return (
                         <TouchableOpacity
+                          key={`dayofweek_${dayOfWeek}`}
                           style={{
                             backgroundColor: cycleValue.includes(dayOfWeek)
                               ? Colors.light.tint
