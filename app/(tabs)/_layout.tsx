@@ -68,15 +68,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="timeline"
-        options={{
-          title: 'タイムライン',
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons size={28} name={focused ? 'compass' : 'compass-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="setting"
         options={{
           headerShown: true,
