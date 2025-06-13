@@ -113,6 +113,8 @@ export class Routine extends Realm.Object<Routine> {
   _id!: Realm.BSON.ObjectId;
   userId!: string;
   title!: string;
+  cycle!: string;
+  cycleValue!: string;
   color!: string;
   startedAt!: Date;
   endedAt!: Date;
@@ -120,6 +122,8 @@ export class Routine extends Realm.Object<Routine> {
   static generate(params: {
     userId: string;
     title?: string;
+    cycle?: string;
+    cycleValue?: string;
     color?: string;
     startedAt?: Date;
     endedAt?: Date;
@@ -128,6 +132,8 @@ export class Routine extends Realm.Object<Routine> {
       _id: new Realm.BSON.ObjectId(),
       userId: params.userId,
       title: params.title || '',
+      cycle: params.cycle || 'everyday',
+      cycleValue: params.cycleValue || '',
       color: params.color || 'red',
       startedAt: params.startedAt,
       endedAt: params.endedAt,
@@ -141,6 +147,8 @@ export class Routine extends Realm.Object<Routine> {
       _id: 'objectId',
       userId: 'string',
       title: 'string',
+      cycle: 'string',
+      cycleValue: 'string',
       color: 'string',
       startedAt: 'date',
       endedAt: 'date',

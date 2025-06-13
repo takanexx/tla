@@ -1,5 +1,7 @@
 import Banner from '@/components/Banner';
 import { Colors } from '@/constants/Colors';
+import { getDayOfWeekStr } from '@/constants/date';
+import { convertCycleStr } from '@/lib/realModel';
 import { Record, Routine, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +20,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { BannerAdSize } from 'react-native-google-mobile-ads';
@@ -43,6 +44,8 @@ const SettingRoutine = () => {
   const [modalType, setModalType] = useState('add');
   const [editRoutine, setEditRoutine] = useState<Routine | null>(null);
   const [fromToday, setFromToday] = useState(false);
+  const [cycle, setCycle] = useState('everyday');
+  const [cycleValue, setCycleValue] = useState<number[]>([]);
 
   const routines = useQuery(Routine).sorted('startedAt');
 
@@ -65,6 +68,8 @@ const SettingRoutine = () => {
           userId: user._id.toString(),
           title: title,
           color: routineColor,
+          cycle: cycle,
+          cycleValue: cycleValue.join(','),
           startedAt: startedAt,
           endedAt: endedAt,
         }) as unknown as Routine,
@@ -75,7 +80,17 @@ const SettingRoutine = () => {
     if (fromToday) {
       // 今日のルーティンレコードを作成
       const now = new Date();
+      // 日付指定のルーティンの場合
+      if (routine.cycle === 'dayofweek') {
+        const cycleValAry = routine.cycleValue.split(',');
+        // 今日の曜日が含まれていない場合はRecordは作成せず終了
+        if (!cycleValAry.includes(String(now.getDay()))) {
+          resetState();
+          return;
+        }
+      }
 
+      // 毎日、または曜日指定で今日の曜日が含まれている場合はレコードを作成
       if (routine.startedAt.getHours() > routine.endedAt.getHours()) {
         // 日付を跨ぐ場合（22時〜6時のようなルーティン）は、22時〜24時と0時〜6時のように分割して保存する
         realm.write(() => {
@@ -152,7 +167,7 @@ const SettingRoutine = () => {
     resetState();
   };
 
-  // ルーティンの編集処理
+  // ルーティーンの編集処理
   const editRoutineHandler = () => {
     if (!editRoutine) return;
 
@@ -175,6 +190,8 @@ const SettingRoutine = () => {
     realm.write(() => {
       editRoutine.title = title;
       editRoutine.color = routineColor;
+      editRoutine.cycle = cycle;
+      editRoutine.cycleValue = cycleValue.join(',');
       editRoutine.startedAt = startedAt;
       editRoutine.endedAt = endedAt;
     });
@@ -193,6 +210,8 @@ const SettingRoutine = () => {
     setStartedAt(new Date());
     setEditRoutine(null);
     setFromToday(false);
+    setCycle('everyday');
+    setCycleValue([]);
   };
 
   return (
@@ -212,7 +231,7 @@ const SettingRoutine = () => {
       />
       <ScrollView contentContainerStyle={styles.container}>
         <View style={{ marginTop: 10 }}>
-          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティン</Text>
+          <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティーン</Text>
           <View style={{ ...styles.card, backgroundColor: colors.card }}>
             {routines.length === 0 ? (
               <View
@@ -223,7 +242,7 @@ const SettingRoutine = () => {
                 }}
               >
                 <Text style={{ fontSize: 16, color: colors.text }}>
-                  固定ルーティンはまだありません
+                  固定ルーティーンはまだありません
                 </Text>
               </View>
             ) : (
@@ -239,16 +258,21 @@ const SettingRoutine = () => {
                       borderBottomColor: colors.border,
                     }}
                   >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
-                      <View
-                        style={{
-                          backgroundColor: item.color,
-                          width: 15,
-                          height: 15,
-                          marginHorizontal: 5,
-                        }}
-                      ></View>
+                    <View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
+                        <View
+                          style={{
+                            backgroundColor: item.color,
+                            width: 15,
+                            height: 15,
+                            marginHorizontal: 5,
+                          }}
+                        ></View>
+                      </View>
+                      <Text style={{ color: 'gray', paddingLeft: 5 }}>
+                        {convertCycleStr(item.cycle, item.cycleValue ?? '')}
+                      </Text>
                     </View>
                     <View
                       style={{
@@ -281,6 +305,10 @@ const SettingRoutine = () => {
                           setRoutineColor(item.color);
                           setStartedAt(item.startedAt);
                           setEndedAt(item.endedAt);
+                          setCycle(item.cycle);
+                          setCycleValue(
+                            item.cycleValue.split(',').filter(Boolean).map(Number) ?? [],
+                          );
                           setVisible(true);
                         }}
                       >
@@ -299,34 +327,26 @@ const SettingRoutine = () => {
       </ScrollView>
       <Modal
         animationType="slide"
-        transparent={true}
+        presentationStyle="pageSheet"
         visible={visible}
         onRequestClose={() => resetState()}
       >
-        <TouchableWithoutFeedback onPress={() => resetState()}>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
-        </TouchableWithoutFeedback>
-        <View
-          style={{
-            height: 'auto',
+        <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
+          <Ionicons
+            name="close-circle-outline"
+            size={26}
+            color={'gray'}
+            style={{ padding: 10 }}
+            onPress={() => resetState()}
+          />
+        </View>
+        <ScrollView
+          contentContainerStyle={{
             backgroundColor: colors.card,
-            marginTop: 'auto',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+            height: '100%',
             paddingBottom: 40,
           }}
         >
-          <View
-            style={{
-              alignItems: 'flex-end',
-              padding: 10,
-              paddingBottom: 0,
-            }}
-          >
-            <TouchableOpacity onPress={() => resetState()}>
-              <Ionicons name="close-circle-outline" size={26} color="gray" />
-            </TouchableOpacity>
-          </View>
           <View
             style={{
               backgroundColor: colors.card,
@@ -354,6 +374,103 @@ const SettingRoutine = () => {
                   value={title}
                   onChangeText={text => setTitle(text)}
                 />
+              </View>
+              <View style={{ marginBottom: 20 }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingTop: 5,
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
+                    固定サイクル
+                  </Text>
+                  <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor:
+                          cycle === 'everyday' ? Colors.light.tint : colors.background,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingHorizontal: 10,
+                        paddingVertical: 7,
+                        borderRadius: 10,
+                        borderTopRightRadius: 0,
+                        borderBottomRightRadius: 0,
+                        marginRight: 0,
+                      }}
+                      onPress={() => setCycle('everyday')}
+                    >
+                      <Text
+                        style={{ fontSize: 18, color: cycle === 'everyday' ? '#fff' : colors.text }}
+                      >
+                        毎日
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor:
+                          cycle === 'dayofweek' ? Colors.light.tint : colors.background,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingHorizontal: 10,
+                        paddingVertical: 7,
+                        borderRadius: 10,
+                        borderTopLeftRadius: 0,
+                        borderBottomLeftRadius: 0,
+                      }}
+                      onPress={() => setCycle('dayofweek')}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          color: cycle === 'dayofweek' ? '#fff' : colors.text,
+                        }}
+                      >
+                        曜日指定
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                {cycle === 'dayofweek' && (
+                  <View style={{ flexDirection: 'row', marginTop: 15, justifyContent: 'center' }}>
+                    {[0, 1, 2, 3, 4, 5, 6].map(dayOfWeek => {
+                      return (
+                        <TouchableOpacity
+                          style={{
+                            backgroundColor: cycleValue.includes(dayOfWeek)
+                              ? Colors.light.tint
+                              : colors.background,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            paddingHorizontal: 13,
+                            paddingVertical: 5,
+                            borderRadius: 5,
+                            marginHorizontal: 5,
+                          }}
+                          onPress={() => {
+                            if (!cycleValue.includes(dayOfWeek)) {
+                              setCycleValue([...cycleValue, dayOfWeek]);
+                            } else {
+                              setCycleValue(cycleValue.filter(d => d !== dayOfWeek));
+                            }
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 18,
+                              color: cycleValue.includes(dayOfWeek) ? '#fff' : colors.text,
+                            }}
+                          >
+                            {getDayOfWeekStr(dayOfWeek)}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
               </View>
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
@@ -426,7 +543,7 @@ const SettingRoutine = () => {
                 }}
               >
                 <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
-                  今日からルーティンをセットする
+                  今日からルーティーンをセットする
                 </Text>
                 <Switch value={fromToday} onValueChange={value => setFromToday(value)} />
               </View>
@@ -463,7 +580,7 @@ const SettingRoutine = () => {
                   }}
                   onPress={() => {
                     Alert.alert(
-                      'ルーティンを削除しますか？',
+                      'ルーティーンを削除しますか？',
                       '削除したデータは復元できません。',
                       [
                         {
@@ -486,13 +603,13 @@ const SettingRoutine = () => {
                   }}
                 >
                   <Text style={{ fontWeight: 'bold', color: 'red', textAlign: 'center' }}>
-                    ルーティンを削除する
+                    ルーティーンを削除する
                   </Text>
                 </TouchableOpacity>
               )}
             </View>
           </View>
-        </View>
+        </ScrollView>
       </Modal>
     </>
   );

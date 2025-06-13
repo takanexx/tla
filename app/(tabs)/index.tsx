@@ -150,7 +150,7 @@ export default function HomeScreen() {
   }
   const user = users[0];
   const records = useQuery(Record).filtered(
-    'routineId == null and startedAt >= $0 and startedAt <= $1',
+    'routineId == null and date >= $0 and date <= $1',
     new Date(`${today.toLocaleDateString('sv-SE')} 00:00:00`), // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
     new Date(`${today.toLocaleDateString('sv-SE')} 23:59:59`),
   );
@@ -169,7 +169,10 @@ export default function HomeScreen() {
     totalMinutes = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
   }
 
-  const routines = useQuery(Record).filtered('routineId != null');
+  const routines = useQuery(Record).filtered(
+    'routineId != null and date >= $0',
+    new Date(`${today.toLocaleDateString('sv-SE')} 00:00:00`),
+  );
 
   let d: Array<ChartDataType> = [];
   let freeTime = 24;
