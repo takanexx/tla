@@ -1,6 +1,7 @@
 import Banner from '@/components/Banner';
 import SvgPieChart, { ChartDataType } from '@/components/SvgPieChart';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
+import TextInputAccessory from '@/components/ui/TextIputAccesory';
 import { ChartColors, Colors, getRateColor } from '@/constants/Colors';
 import { Record, Routine, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
@@ -469,6 +470,7 @@ export default function HomeScreen() {
                   padding: 8,
                   fontSize: 16,
                 }}
+                inputAccessoryViewID={'home-accessory'}
                 onChangeText={value => {
                   if (value === '') {
                     setIsError(true);
@@ -478,6 +480,7 @@ export default function HomeScreen() {
                   }
                 }}
               />
+              <TextInputAccessory accessoryId={'home-accessory'} />
             </View>
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>

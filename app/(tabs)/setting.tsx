@@ -1,3 +1,4 @@
+import TextInputAccessory from '@/components/ui/TextIputAccesory';
 import { Colors } from '@/constants/Colors';
 import { User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
@@ -225,6 +226,7 @@ export default function SettingScreen() {
                 </Text>
                 <TextInput
                   defaultValue={name}
+                  inputAccessoryViewID={'userNameInput'}
                   onChangeText={value => setName(value)}
                   style={{
                     color: colors.text,
@@ -235,6 +237,7 @@ export default function SettingScreen() {
                     fontSize: 16,
                   }}
                 />
+                <TextInputAccessory accessoryId={'userNameInput'} />
               </View>
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
@@ -242,6 +245,7 @@ export default function SettingScreen() {
                 </Text>
                 <TextInput
                   defaultValue={email}
+                  inputAccessoryViewID={'userEmailInput'}
                   onChangeText={value => setEmail(value)}
                   keyboardType="email-address"
                   style={{
@@ -253,6 +257,7 @@ export default function SettingScreen() {
                     fontSize: 16,
                   }}
                 />
+                <TextInputAccessory accessoryId={'userEmailInput'} />
               </View>
               <TouchableOpacity
                 onPress={onUpdateUser}
@@ -278,6 +283,7 @@ export default function SettingScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+    paddingBottom: 100,
   },
   card: {
     backgroundColor: 'white',

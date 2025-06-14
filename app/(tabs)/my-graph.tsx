@@ -1,4 +1,5 @@
 import Banner from '@/components/Banner';
+import TextInputAccessory from '@/components/ui/TextIputAccesory';
 import { Colors } from '@/constants/Colors';
 import { Exam, ExamResult, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
@@ -67,7 +68,7 @@ export default function MyGraphScreen() {
     };
   }
   const { colors } = useTheme();
-  const { isDark, toggleTheme } = useThemeContext();
+  const { isDark } = useThemeContext();
   const [chartData, setChartData] = useState<Object | any>(firstShowChartData);
   const [visible, setVisible] = useState(false);
   const [visibleAddResultModal, setVisibleAddResultModal] = useState(false);
@@ -212,6 +213,7 @@ export default function MyGraphScreen() {
                   <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験名</Text>
                   <TextInput
                     defaultValue={title}
+                    inputAccessoryViewID={'examNameAccessory'}
                     style={{
                       width: '100%',
                       borderColor: 'lightgray',
@@ -223,6 +225,7 @@ export default function MyGraphScreen() {
                     }}
                     onChangeText={text => setTitle(text)}
                   />
+                  <TextInputAccessory accessoryId={'examNameAccessory'} />
                 </View>
                 <View
                   style={{
@@ -257,6 +260,7 @@ export default function MyGraphScreen() {
                   <TextInput
                     defaultValue=""
                     keyboardType="numeric"
+                    inputAccessoryViewID={'examPoint'}
                     style={{
                       color: colors.text,
                       width: 120,
@@ -268,6 +272,7 @@ export default function MyGraphScreen() {
                     }}
                     onChangeText={text => setScore(Number(text))}
                   />
+                  <TextInputAccessory accessoryId={'examPoint'} />
                 </View>
               </View>
               <Banner size={BannerAdSize.LARGE_BANNER} />
@@ -560,6 +565,7 @@ export default function MyGraphScreen() {
               >
                 <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>点数</Text>
                 <TextInput
+                  inputAccessoryViewID={'addExamPoint'}
                   defaultValue=""
                   keyboardType="numeric"
                   style={{
@@ -573,6 +579,7 @@ export default function MyGraphScreen() {
                   }}
                   onChangeText={text => setScore(Number(text))}
                 />
+                <TextInputAccessory accessoryId={'AddExamPoint'} />
               </View>
               <TouchableOpacity
                 style={{
@@ -620,6 +627,7 @@ export default function MyGraphScreen() {
             <View style={{ marginBottom: 20 }}>
               <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>試験名</Text>
               <TextInput
+                inputAccessoryViewID={'AddExamName'}
                 defaultValue={exam?.title}
                 style={{
                   color: colors.text,
@@ -634,6 +642,7 @@ export default function MyGraphScreen() {
                   setEditData({ ...editData, title: text });
                 }}
               />
+              <TextInputAccessory accessoryId={'AddExamName'} />
             </View>
           </View>
           <Banner size={BannerAdSize.LARGE_BANNER} />

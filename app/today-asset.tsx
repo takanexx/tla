@@ -1,4 +1,5 @@
 import Banner from '@/components/Banner';
+import TextInputAccessory from '@/components/ui/TextIputAccesory';
 import { ChartColors, Colors } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
@@ -244,7 +245,7 @@ const SettingRoutine = () => {
       </ScrollView>
       <Modal
         animationType="slide"
-        transparent={true}
+        presentationStyle="pageSheet"
         visible={visible}
         onRequestClose={() => resetState()}
       >
@@ -272,13 +273,14 @@ const SettingRoutine = () => {
               <Ionicons name="close-circle-outline" size={26} color="gray" />
             </TouchableOpacity>
           </View>
-          <View
-            style={{
+          <ScrollView
+            contentContainerStyle={{
               backgroundColor: colors.card,
               justifyContent: 'center',
               alignItems: 'center',
               paddingHorizontal: 30,
               paddingVertical: 20,
+              paddingBottom: 50,
             }}
           >
             <View style={{ width: '100%' }}>
@@ -296,9 +298,11 @@ const SettingRoutine = () => {
                     fontSize: 16,
                     color: colors.text,
                   }}
+                  inputAccessoryViewID={'routineName'}
                   value={title}
                   onChangeText={text => setTitle(text)}
                 />
+                <TextInputAccessory accessoryId={'routineName'} />
               </View>
               <View style={{ marginBottom: 20 }}>
                 <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
@@ -417,7 +421,7 @@ const SettingRoutine = () => {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </>

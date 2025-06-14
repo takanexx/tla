@@ -1,5 +1,7 @@
+import TextInputAccessory from '@/components/ui/TextIputAccesory';
 import { Colors } from '@/constants/Colors';
 import { User } from '@/lib/realmSchema';
+import { useTheme } from '@react-navigation/native';
 import { useRealm } from '@realm/react';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
@@ -7,6 +9,7 @@ import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 're
 
 const CreateUser = () => {
   const realm = useRealm(); // Realmのインスタンスを取得
+  const { colors } = useTheme();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
@@ -44,9 +47,12 @@ const CreateUser = () => {
                 borderRadius: 10,
                 padding: 8,
                 fontSize: 16,
+                color: colors.text,
               }}
+              inputAccessoryViewID={'userNameInput'}
               onChangeText={value => setName(value)}
             />
+            <TextInputAccessory accessoryId={'userNameInput'} />
           </View>
           <View style={{}}>
             <Text style={{ fontSize: 16, paddingBottom: 5 }}>メールアドレス</Text>
@@ -59,11 +65,13 @@ const CreateUser = () => {
                 borderRadius: 10,
                 padding: 8,
                 fontSize: 16,
+                color: colors.text,
               }}
+              inputAccessoryViewID={'userEmailInput'}
               keyboardType="email-address"
-              autoCapitalize="none"
               onChangeText={value => setEmail(value)}
             />
+            <TextInputAccessory accessoryId={'userEmailInput'} />
             <Text style={{ fontSize: 12, color: 'gray', paddingTop: 5 }}>
               メールアドレスは後から変更できます
             </Text>
