@@ -26,3 +26,30 @@ export const Colors = {
 };
 
 export const ChartColors = ['#004971', '#4274a0', '#ffdc96', '#ffa467', '#ff7938', '#d94448'];
+
+/**
+ * チャートの割合を元に色を返す
+ * @param {number} rate
+ * @returns {string}
+ */
+export const getRateColor = (rate: number): string => {
+  let color = Colors.light.tint;
+  if (rate < 20) {
+    // 20%以下（赤）
+    color = '#DC2525';
+  } else if (20 <= rate && rate < 40) {
+    // 20〜40%（オレンジ）
+    color = '#FF7601';
+  } else if (40 <= rate && rate < 60) {
+    // 40〜60%（黄）
+    color = '#FCF259';
+  } else if (60 <= rate && rate < 80) {
+    // 60〜80%（黄緑）
+    color = '#B6F500';
+  } else if (80 <= rate) {
+    // 80%以上（緑）
+    color = '#06D001';
+  }
+
+  return color;
+};

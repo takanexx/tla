@@ -1,6 +1,6 @@
 import Banner from '@/components/Banner';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import { Colors } from '@/constants/Colors';
+import { Colors, getRateColor } from '@/constants/Colors';
 import { Record } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
@@ -87,7 +87,7 @@ export default function ScheduleScreen() {
     setEditRecord(null);
   };
 
-  let markedDates: { [date: string]: { marked: boolean } } = {};
+  let markedDates: { [date: string]: { marked: boolean; dotColor: string } } = {};
   const recordsForMonth = useQuery(Record).filtered(
     'routineId == null and date >= $0 and date < $1',
     new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -96,8 +96,69 @@ export default function ScheduleScreen() {
   recordsForMonth.forEach(r => {
     const date = r.date;
     // ゼロパディングしないとCalendar側で表示されないのでゼロパディングしておく
-    let dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    markedDates[dateStr] = { marked: true };
+    // let dateStr = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+    let dateStr = date.toLocaleDateString('sv-SE'); // スウェーデンの表示形式は「2025-02-01」となるのでそれを使用する
+
+    // すでに該当日付があれば、処理しない
+    if (markedDates[dateStr] !== undefined) return;
+
+    // 稼働時間を取得する
+    const records = useQuery(Record).filtered(
+      'routineId == null and date >= $0 and date <= $1',
+      new Date(`${dateStr} 00:00:00`),
+      new Date(`${dateStr} 23:59:59`),
+    );
+    let totalHours = 0;
+    let totalMinutes = 0;
+    // 稼働の合計時間を計算
+    const totalTime = records.reduce((acc, record) => {
+      const startedAt = record.startedAt.getTime();
+      const endedAt = record.endedAt.getTime();
+      return acc + (endedAt - startedAt);
+    }, 0);
+    // 合計時間を時間と分に変換
+    totalHours = Math.floor(totalTime / (1000 * 60 * 60));
+    totalMinutes = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
+
+    // ルーティンの時間を取得
+    const routines = useQuery(Record).filtered(
+      'routineId != null and date >= $0 and date < $1',
+      new Date(`${dateStr} 00:00:00`),
+      new Date(`${dateStr} 23:59:59`),
+    );
+    // 隙間時間
+    let freeTime = 24;
+    routines.forEach((routine, index) => {
+      const start =
+        Math.floor((routine.startedAt.getHours() + routine.startedAt.getMinutes() / 60) * 100) /
+        100;
+      const end =
+        Math.floor((routine.endedAt.getHours() + routine.endedAt.getMinutes() / 60) * 100) / 100;
+
+      if (routine.startedAt.getHours() > routine.endedAt.getHours()) {
+        // 22〜6時みたいなものは、22〜24時と0〜6時みたいに分ける
+        freeTime = freeTime - Math.floor((24 - start) * 100) / 100;
+        freeTime = freeTime - Math.floor(end * 100) / 100;
+      } else {
+        // 日付を跨がない場合
+        freeTime = freeTime - Math.floor((end - start) * 100) / 100;
+      }
+    });
+
+    // 投資時間を取得
+    let investTime = 0;
+    records.forEach(record => {
+      const start =
+        Math.floor((record.startedAt.getHours() + record.startedAt.getMinutes() / 60) * 100) / 100;
+      const end =
+        Math.floor((record.endedAt.getHours() + record.endedAt.getMinutes() / 60) * 100) / 100;
+      investTime = investTime + (end - start);
+    });
+
+    const rate = Math.floor((investTime / freeTime) * 100);
+    const dotColor = getRateColor(rate);
+
+    markedDates[dateStr] = { marked: true, dotColor: dotColor };
   });
 
   let totalHours = 0;
@@ -137,6 +198,7 @@ export default function ScheduleScreen() {
     }
   });
 
+  // 投資時間
   let investTime = 0;
   records.forEach(record => {
     const start =
@@ -157,13 +219,14 @@ export default function ScheduleScreen() {
               backgroundColor: colors.card,
               calendarBackground: colors.card,
               dayTextColor: colors.text,
+              todayTextColor: Colors.light.tint,
               // @ts-ignore
               'stylesheet.calendar.header': {
                 dayTextAtIndex0: {
-                  color: 'red',
+                  color: '#D25565', // 日曜
                 },
                 dayTextAtIndex6: {
-                  color: 'blue',
+                  color: '#3674B5', // 土曜
                 },
               },
             }}
@@ -174,7 +237,11 @@ export default function ScheduleScreen() {
             }}
             markedDates={{
               ...markedDates,
-              [selected]: { selected: true, disableTouchEvent: true },
+              [selected]: {
+                selected: true,
+                disableTouchEvent: true,
+                selectedColor: Colors.light.tint,
+              },
             }}
           />
         </Fragment>
@@ -240,7 +307,7 @@ export default function ScheduleScreen() {
                   width={20}
                   rotation={0}
                   fill={Math.floor((investTime / freeTime) * 100)}
-                  tintColor={Colors.light.tint}
+                  tintColor={getRateColor(Math.floor((investTime / freeTime) * 100))}
                   backgroundColor={isDark ? '#191e2c' : '#e7e7ea'}
                 >
                   {fill => (

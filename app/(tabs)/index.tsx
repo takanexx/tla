@@ -1,7 +1,7 @@
 import Banner from '@/components/Banner';
 import SvgPieChart, { ChartDataType } from '@/components/SvgPieChart';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import { ChartColors, Colors } from '@/constants/Colors';
+import { ChartColors, Colors, getRateColor } from '@/constants/Colors';
 import { Record, Routine, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
@@ -416,7 +416,7 @@ export default function HomeScreen() {
                   width={20}
                   rotation={0}
                   fill={Math.floor((investTime / freeTime) * 100)}
-                  tintColor={Colors.light.tint}
+                  tintColor={getRateColor(Math.floor((investTime / freeTime) * 100))}
                   backgroundColor={isDark ? '#191e2c' : '#e7e7ea'}
                 >
                   {fill => (
