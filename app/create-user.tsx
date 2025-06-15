@@ -5,7 +5,7 @@ import { useTheme } from '@react-navigation/native';
 import { useRealm } from '@realm/react';
 import { router, Stack } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, SafeAreaView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const CreateUser = () => {
   const realm = useRealm(); // Realmのインスタンスを取得
@@ -30,7 +30,11 @@ const CreateUser = () => {
   return (
     <>
       <Stack.Screen options={{ title: 'ユーザー作成' }} />
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        behavior="padding"
+        keyboardVerticalOffset={100} // Adjust this value based on your layout
+      >
         <Image
           source={require('../assets/images/icon.png')}
           style={{ width: 100, height: 100, marginBottom: 20 }}
@@ -91,7 +95,7 @@ const CreateUser = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </KeyboardAvoidingView>
     </>
   );
 };

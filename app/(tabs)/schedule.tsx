@@ -175,11 +175,12 @@ export default function ScheduleScreen() {
     totalMinutes = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
   }
 
-  const routines = useQuery(Record).filtered(
-    'routineId != null and date >= $0 and date < $1',
-    new Date(`${selected} 00:00:00`),
-    new Date(`${selected} 23:59:59`),
-  );
+  const routines =
+    useQuery(Record).filtered(
+      'routineId != null and date >= $0 and date < $1',
+      new Date(`${selected} 00:00:00`),
+      new Date(`${selected} 23:59:59`),
+    ) ?? [];
   // 隙間時間
   let freeTime = 24;
   routines.forEach((routine, index) => {

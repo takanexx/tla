@@ -350,6 +350,7 @@ const SettingRoutine = () => {
             paddingHorizontal: 30,
             paddingVertical: 20,
           }}
+          style={{ backgroundColor: colors.card }}
         >
           <View style={{ width: '100%' }}>
             <View style={{ marginBottom: 20 }}>

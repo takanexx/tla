@@ -170,7 +170,7 @@ export default function MyGraphScreen() {
               marginTop: 60,
             }}
           >
-            <Text style={{ fontSize: 18, color: 'gray' }}>試験データがありません</Text>
+            <Text style={{ fontSize: 18, color: 'gray' }}>データがありません</Text>
             <TouchableOpacity
               style={{
                 paddingHorizontal: 30,
@@ -181,7 +181,7 @@ export default function MyGraphScreen() {
               }}
               onPress={() => setVisible(true)}
             >
-              <Text style={{ fontWeight: 'bold', color: '#fff' }}>試験データを作成</Text>
+              <Text style={{ fontWeight: 'bold', color: '#fff' }}>データを作成</Text>
             </TouchableOpacity>
           </View>
           <Modal

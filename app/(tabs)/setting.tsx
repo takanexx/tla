@@ -9,8 +9,8 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Switch,
@@ -50,7 +50,12 @@ export default function SettingScreen() {
       <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
         <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>ユーザー</Text>
         <TouchableOpacity onPress={() => setVisible(true)}>
-          <Text style={{ padding: 5, fontWeight: 'bold', color: Colors.light.tint }}>編集</Text>
+          <Ionicons
+            name="create-outline"
+            size={24}
+            color={Colors.light.tint}
+            style={{ padding: 5 }}
+          />
         </TouchableOpacity>
       </View>
       <View style={{ ...styles.card, backgroundColor: colors.card }}>
@@ -193,7 +198,7 @@ export default function SettingScreen() {
         <TouchableWithoutFeedback onPress={() => setVisible(false)}>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
         </TouchableWithoutFeedback>
-        <SafeAreaView
+        <KeyboardAvoidingView
           style={{
             height: 'auto',
             backgroundColor: colors.card,
@@ -202,13 +207,19 @@ export default function SettingScreen() {
             borderTopRightRadius: 20,
             paddingBottom: 40,
           }}
+          behavior="padding"
+          keyboardVerticalOffset={100} // Adjust this value based on your layout
         >
           <View style={{ alignItems: 'flex-end', padding: 10, paddingBottom: 0 }}>
             <Ionicons
               name="close-circle-outline"
               size={26}
               color={'gray'}
-              onPress={() => setVisible(false)}
+              onPress={() => {
+                setName(user.name);
+                setEmail(user.email);
+                setVisible(false);
+              }}
             />
           </View>
           <View
@@ -274,7 +285,7 @@ export default function SettingScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </SafeAreaView>
+        </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
   );

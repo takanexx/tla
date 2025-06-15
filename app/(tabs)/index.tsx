@@ -301,7 +301,13 @@ export default function HomeScreen() {
             </Text>
             <Ionicons name="chevron-forward" size={24} color={'gray'} />
           </TouchableOpacity>
-          <SvgPieChart chartData={d} />
+          {d.length > 0 ? (
+            <SvgPieChart chartData={d} />
+          ) : (
+            <View style={{ alignItems: 'center', padding: 50 }}>
+              <Text style={{ color: colors.text }}>データがありません</Text>
+            </View>
+          )}
         </View>
 
         <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: 20 }}>
