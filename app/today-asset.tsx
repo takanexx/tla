@@ -108,135 +108,147 @@ const SettingRoutine = () => {
         <View style={{ marginTop: 10 }}>
           <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>固定ルーティン</Text>
           <View style={{ ...styles.card, backgroundColor: colors.card }}>
-            <FlatList
-              data={routines}
-              keyExtractor={item => item._id.toString()}
-              scrollEnabled={false}
-              renderItem={({ item, index }) => (
-                <View
-                  style={{
-                    ...styles.sectionListItemView,
-                    borderBottomWidth: routines.length === index + 1 ? 0 : 1,
-                    borderBottomColor: colors.border,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
-                    <View
-                      style={{
-                        backgroundColor: item.color,
-                        width: 15,
-                        height: 15,
-                        marginHorizontal: 5,
-                      }}
-                    ></View>
-                  </View>
+            {routines.length === 0 ? (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text style={{ color: colors.text }}>今日のルーティーンはありません</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={routines}
+                keyExtractor={item => item._id.toString()}
+                scrollEnabled={false}
+                renderItem={({ item, index }) => (
                   <View
                     style={{
-                      justifyContent: 'center',
-                      flexDirection: 'row',
-                      alignItems: 'center',
+                      ...styles.sectionListItemView,
+                      borderBottomWidth: routines.length === index + 1 ? 0 : 1,
+                      borderBottomColor: colors.border,
                     }}
                   >
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
-                      {item.startedAt.toLocaleTimeString('ja-JP', {
-                        hour: 'numeric',
-                        minute: 'numeric',
-                      })}
-                    </Text>
-                    <Text style={{ fontSize: 16, paddingHorizontal: 5, color: colors.text }}>
-                      〜
-                    </Text>
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
-                      {item.endedAt.toLocaleTimeString('ja-JP', {
-                        hour: 'numeric',
-                        minute: 'numeric',
-                      })}
-                    </Text>
-                    <TouchableOpacity
-                      style={{ paddingLeft: 10 }}
-                      onPress={() => {
-                        setEditRoutine(item);
-                        setTitle(item.title);
-                        setRoutineColor(item.color);
-                        setStartedAt(item.startedAt);
-                        setEndedAt(item.endedAt);
-                        setVisible(true);
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
+                      <View
+                        style={{
+                          backgroundColor: item.color,
+                          width: 15,
+                          height: 15,
+                          marginHorizontal: 5,
+                        }}
+                      ></View>
+                    </View>
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        flexDirection: 'row',
+                        alignItems: 'center',
                       }}
                     >
-                      <Ionicons name="ellipsis-vertical" size={18} color={'gray'} />
-                    </TouchableOpacity>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+                        {item.startedAt.toLocaleTimeString('ja-JP', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}
+                      </Text>
+                      <Text style={{ fontSize: 16, paddingHorizontal: 5, color: colors.text }}>
+                        〜
+                      </Text>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+                        {item.endedAt.toLocaleTimeString('ja-JP', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}
+                      </Text>
+                      <TouchableOpacity
+                        style={{ paddingLeft: 10 }}
+                        onPress={() => {
+                          setEditRoutine(item);
+                          setTitle(item.title);
+                          setRoutineColor(item.color);
+                          setStartedAt(item.startedAt);
+                          setEndedAt(item.endedAt);
+                          setVisible(true);
+                        }}
+                      >
+                        <Ionicons name="ellipsis-vertical" size={18} color={'gray'} />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              )}
-            />
+                )}
+              />
+            )}
           </View>
         </View>
         <View style={{ marginTop: 30 }}>
           <Text style={{ padding: 5, fontWeight: 'bold', color: 'gray' }}>投資した時間</Text>
           <View style={{ ...styles.card, backgroundColor: colors.card }}>
-            <FlatList
-              data={records}
-              keyExtractor={item => item._id.toString()}
-              scrollEnabled={false}
-              renderItem={({ item, index }) => (
-                <View
-                  style={{
-                    ...styles.sectionListItemView,
-                    borderBottomWidth: routines.length === index + 1 ? 0 : 1,
-                    borderBottomColor: colors.border,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
-                    <View
-                      style={{
-                        backgroundColor: item.color,
-                        width: 15,
-                        height: 15,
-                        marginHorizontal: 5,
-                      }}
-                    ></View>
-                  </View>
+            {records.length === 0 ? (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text style={{ color: colors.text }}>今日の投資時間はありません</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={records}
+                keyExtractor={item => item._id.toString()}
+                scrollEnabled={false}
+                renderItem={({ item, index }) => (
                   <View
                     style={{
-                      justifyContent: 'center',
-                      flexDirection: 'row',
-                      alignItems: 'center',
+                      ...styles.sectionListItemView,
+                      borderBottomWidth: routines.length === index + 1 ? 0 : 1,
+                      borderBottomColor: colors.border,
                     }}
                   >
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
-                      {item.startedAt.toLocaleTimeString('ja-JP', {
-                        hour: 'numeric',
-                        minute: 'numeric',
-                      })}
-                    </Text>
-                    <Text style={{ fontSize: 16, paddingHorizontal: 5, color: colors.text }}>
-                      〜
-                    </Text>
-                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
-                      {item.endedAt.toLocaleTimeString('ja-JP', {
-                        hour: 'numeric',
-                        minute: 'numeric',
-                      })}
-                    </Text>
-                    <TouchableOpacity
-                      style={{ paddingLeft: 10 }}
-                      onPress={() => {
-                        setEditRoutine(item);
-                        setTitle(item.title);
-                        setRoutineColor(item.color);
-                        setStartedAt(item.startedAt);
-                        setEndedAt(item.endedAt);
-                        setVisible(true);
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 16, color: colors.text }}>{item.title}</Text>
+                      <View
+                        style={{
+                          backgroundColor: item.color,
+                          width: 15,
+                          height: 15,
+                          marginHorizontal: 5,
+                        }}
+                      ></View>
+                    </View>
+                    <View
+                      style={{
+                        justifyContent: 'center',
+                        flexDirection: 'row',
+                        alignItems: 'center',
                       }}
                     >
-                      <Ionicons name="ellipsis-vertical" size={18} color={'gray'} />
-                    </TouchableOpacity>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+                        {item.startedAt.toLocaleTimeString('ja-JP', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}
+                      </Text>
+                      <Text style={{ fontSize: 16, paddingHorizontal: 5, color: colors.text }}>
+                        〜
+                      </Text>
+                      <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.text }}>
+                        {item.endedAt.toLocaleTimeString('ja-JP', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                        })}
+                      </Text>
+                      <TouchableOpacity
+                        style={{ paddingLeft: 10 }}
+                        onPress={() => {
+                          setEditRoutine(item);
+                          setTitle(item.title);
+                          setRoutineColor(item.color);
+                          setStartedAt(item.startedAt);
+                          setEndedAt(item.endedAt);
+                          setVisible(true);
+                        }}
+                      >
+                        <Ionicons name="ellipsis-vertical" size={18} color={'gray'} />
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              )}
-            />
+                )}
+              />
+            )}
           </View>
         </View>
         <View style={{ marginTop: 30, alignItems: 'center' }}>

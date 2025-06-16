@@ -13,6 +13,7 @@ import {
   Alert,
   Dimensions,
   FlatList,
+  KeyboardAvoidingView,
   Modal,
   SafeAreaView,
   ScrollView,
@@ -499,15 +500,10 @@ export default function MyGraphScreen() {
         onRequestClose={() => setVisibleAddResultModal(false)}
       >
         <TouchableWithoutFeedback onPress={() => setVisibleAddResultModal(false)}>
-          <View
-            style={{
-              flex: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          />
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
         </TouchableWithoutFeedback>
-        <View
+        <KeyboardAvoidingView
+          behavior="padding"
           style={{
             height: 'auto',
             backgroundColor: colors.card,
@@ -516,6 +512,7 @@ export default function MyGraphScreen() {
             borderTopRightRadius: 20,
             paddingBottom: 40,
           }}
+          keyboardVerticalOffset={100} // Adjust this value based on your layout
         >
           <View style={{ alignItems: 'flex-end', padding: 10, paddingBottom: 0 }}>
             <Ionicons
@@ -597,7 +594,7 @@ export default function MyGraphScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <Modal

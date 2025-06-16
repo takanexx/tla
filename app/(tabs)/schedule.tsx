@@ -1,12 +1,14 @@
 import Banner from '@/components/Banner';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
-import { Colors, getRateColor } from '@/constants/Colors';
-import { Record } from '@/lib/realmSchema';
+import TextInputAccessory from '@/components/ui/TextIputAccesory';
+import { ChartColors, Colors, getRateColor } from '@/constants/Colors';
+import { Record, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@react-navigation/native';
 import { useQuery, useRealm } from '@realm/react';
+import { useRouter } from 'expo-router';
 import { Fragment, useState } from 'react';
 import {
   Alert,
@@ -30,14 +32,25 @@ const screenWidth = Dimensions.get('window').width;
 
 export default function ScheduleScreen() {
   const realm = useRealm();
+  const router = useRouter();
   const { colors } = useTheme();
   const { isDark } = useThemeContext();
   const [selected, setSelected] = useState(new Date().toISOString().split('T')[0]);
   const [visible, setVisible] = useState(false);
+  const [visibleAddModal, setVisibleAddModal] = useState(false);
   const [title, setTitle] = useState('');
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [editRecord, setEditRecord] = useState<Record | null>(null);
+  const [routineColor, setRoutineColor] = useState('red');
+  const [date, setDate] = useState(new Date(selected));
+
+  const users = useQuery(User);
+  if (users.isEmpty() || !users[0]) {
+    // ユーザーが存在しない場合は、エラー画面を表示する
+    router.navigate('/create-user');
+  }
+  const user = users[0];
 
   const records = useQuery(Record).filtered(
     'routineId == null and date >= $0 and date <= $1',
@@ -209,6 +222,36 @@ export default function ScheduleScreen() {
     investTime = investTime + (end - start);
   });
 
+  const onAddRecord = () => {
+    if (!title || !startedAt || !endedAt) return;
+
+    if (
+      !realm
+        .objects(Record)
+        .filtered('routineId == null and startedAt <= $0 and endedAt >= $0', startedAt)
+        .isEmpty()
+    ) {
+      Alert.alert('', '追加しようとしている時間帯にすでに記録が存在しています', [
+        { text: 'OK', style: 'default' },
+      ]);
+      return;
+    }
+
+    realm.write(() => {
+      realm.create(
+        'Record',
+        Record.generate({
+          userId: user._id.toString(),
+          date: date,
+          title: title,
+          color: routineColor,
+          startedAt: startedAt,
+          endedAt: endedAt,
+        }),
+      );
+    });
+  };
+
   return (
     <>
       <SafeAreaView>
@@ -235,6 +278,7 @@ export default function ScheduleScreen() {
             horizontal={true}
             onDayPress={day => {
               setSelected(day.dateString);
+              setDate(new Date(day.dateString));
             }}
             markedDates={{
               ...markedDates,
@@ -321,11 +365,11 @@ export default function ScheduleScreen() {
             </View>
           </View>
           <Text style={{ padding: 5, paddingTop: 20, fontWeight: 'bold', color: 'gray' }}>
-            稼働したタスク
+            投資した時間
           </Text>
           <View style={{ ...styles.card, backgroundColor: colors.card }}>
             {records.length === 0 ? (
-              // 稼働がない場合
+              // 投資時間がない場合
               <View
                 style={{
                   ...styles.sectionListItemView,
@@ -333,10 +377,10 @@ export default function ScheduleScreen() {
                   justifyContent: 'center',
                 }}
               >
-                <Text style={{ color: colors.text }}>稼働はありません</Text>
+                <Text style={{ color: colors.text }}>投資時間はありません</Text>
               </View>
             ) : (
-              // 稼働がある場合
+              // 投資時間がある場合
               <FlatList
                 data={records}
                 keyExtractor={item => item._id.toString()}
@@ -393,7 +437,150 @@ export default function ScheduleScreen() {
           </View>
         </View>
       </ScrollView>
-      <FloatingActionButton />
+      <FloatingActionButton onPressFunction={() => setVisibleAddModal(true)} />
+
+      {/* Add Modal */}
+      <Modal
+        animationType="slide"
+        presentationStyle="pageSheet"
+        visible={visibleAddModal}
+        onRequestClose={() => setVisibleAddModal(false)}
+      >
+        <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
+          <Ionicons
+            name="close-circle-outline"
+            size={26}
+            color={'gray'}
+            style={{ padding: 10 }}
+            onPress={() => setVisibleAddModal(false)}
+          />
+        </View>
+        <ScrollView
+          contentContainerStyle={{
+            backgroundColor: colors.card,
+            padding: 20,
+            paddingBottom: 40,
+          }}
+        >
+          <Text style={{ fontSize: 24, paddingBottom: 25, fontWeight: 'bold', color: colors.text }}>
+            投資時間追加
+          </Text>
+          <View
+            style={{
+              marginBottom: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>日付</Text>
+            <DateTimePicker
+              value={date}
+              mode="date"
+              locale="ja-JP"
+              themeVariant={isDark ? 'dark' : 'light'}
+            />
+          </View>
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>項目</Text>
+            <TextInput
+              defaultValue={title}
+              style={{
+                borderWidth: 1,
+                borderColor: 'lightgray',
+                borderRadius: 10,
+                padding: 8,
+                fontSize: 16,
+              }}
+              onChangeText={text => setTitle(text)}
+              inputAccessoryViewID="addRecordInput"
+            />
+            <TextInputAccessory accessoryId="addRecordInput" />
+          </View>
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 10 }}>
+              {ChartColors.map((color, i) => {
+                return (
+                  <TouchableOpacity
+                    key={`color_${i}`}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      backgroundColor: color,
+                      marginHorizontal: 10,
+                      borderColor: Colors.light.tint,
+                      borderWidth: color === routineColor ? 5 : 0,
+                      borderRadius: 10,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => setRoutineColor(color)}
+                  >
+                    {color === routineColor && (
+                      <Ionicons name="checkmark" size={28} color={Colors.light.tint} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>時間</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <DateTimePicker
+                value={startedAt}
+                themeVariant={isDark ? 'dark' : 'light'}
+                mode="time"
+                display="spinner"
+                style={{ flex: 1, marginRight: 10 }}
+                locale="ja-JP"
+                onChange={(event, date) => {
+                  if (!date) return;
+                  setStartedAt(date);
+                }}
+              />
+              <Text style={{ textAlign: 'center', padding: 10, color: colors.text }}>〜</Text>
+              <DateTimePicker
+                value={endedAt}
+                themeVariant={isDark ? 'dark' : 'light'}
+                mode="time"
+                display="spinner"
+                style={{ flex: 1, marginRight: 10 }}
+                locale="ja-JP"
+                onChange={(event, date) => {
+                  if (!date) return;
+                  setEndedAt(date);
+                }}
+              />
+            </View>
+          </View>
+          <View style={{ width: '100%' }}>
+            <TouchableOpacity
+              style={{
+                paddingHorizontal: 20,
+                paddingVertical: 10,
+                borderRadius: 5,
+                backgroundColor: Colors.light.tint,
+                marginTop: 20,
+              }}
+              onPress={onAddRecord}
+            >
+              <Text style={{ fontWeight: 'bold', color: '#fff', textAlign: 'center' }}>
+                追加する
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </Modal>
+
+      {/* Edit Modal */}
       <Modal
         animationType="slide"
         transparent={true}
