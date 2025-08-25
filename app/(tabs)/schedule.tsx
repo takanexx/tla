@@ -98,6 +98,9 @@ export default function ScheduleScreen() {
     setEndedAt(new Date());
     setStartedAt(new Date());
     setEditRecord(null);
+    setVisibleAddModal(false);
+    setDate(new Date(selected));
+    setRoutineColor('red');
   };
 
   let markedDates: { [date: string]: { marked: boolean; dotColor: string } } = {};
@@ -134,11 +137,12 @@ export default function ScheduleScreen() {
     totalMinutes = Math.floor((totalTime % (1000 * 60 * 60)) / (1000 * 60));
 
     // ルーティンの時間を取得
-    const routines = useQuery(Record).filtered(
-      'routineId != null and date >= $0 and date < $1',
-      new Date(`${dateStr} 00:00:00`),
-      new Date(`${dateStr} 23:59:59`),
-    );
+    const routines =
+      useQuery(Record).filtered(
+        'routineId != null and date >= $0 and date < $1',
+        new Date(`${dateStr} 00:00:00`),
+        new Date(`${dateStr} 23:59:59`),
+      ) ?? [];
     // 隙間時間
     let freeTime = 24;
     routines.forEach((routine, index) => {
@@ -250,6 +254,8 @@ export default function ScheduleScreen() {
         }),
       );
     });
+
+    resetState();
   };
 
   return (
@@ -444,7 +450,9 @@ export default function ScheduleScreen() {
         animationType="slide"
         presentationStyle="pageSheet"
         visible={visibleAddModal}
-        onRequestClose={() => setVisibleAddModal(false)}
+        onRequestClose={() => {
+          resetState();
+        }}
       >
         <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
           <Ionicons
@@ -452,7 +460,9 @@ export default function ScheduleScreen() {
             size={26}
             color={'gray'}
             style={{ padding: 10 }}
-            onPress={() => setVisibleAddModal(false)}
+            onPress={() => {
+              resetState();
+            }}
           />
         </View>
         <ScrollView

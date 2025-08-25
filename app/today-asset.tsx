@@ -41,6 +41,7 @@ const SettingRoutine = () => {
   const [endedAt, setEndedAt] = useState(new Date());
   const [visible, setVisible] = useState(false);
   const [editRoutine, setEditRoutine] = useState<Record | null>(null);
+  const [editType, setEditType] = useState<'routine' | 'record'>('routine');
 
   const routines = useQuery(Record)
     .filtered(
@@ -59,14 +60,27 @@ const SettingRoutine = () => {
   const editRoutineHandler = () => {
     if (!editRoutine) return;
 
+    let query = 'routineId != null';
+    if (editType === 'record') {
+      query = 'routineId == null';
+    }
+
     if (
       !realm
         .objects(Record)
-        .filtered('startedAt <= $0 and endedAt >= $0 and _id != $1', startedAt, editRoutine._id)
+        .filtered(
+          `startedAt <= $0 and endedAt >= $0 and _id != $1 and ${query}`,
+          startedAt,
+          editRoutine._id,
+        )
         .isEmpty() ||
       !realm
         .objects(Record)
-        .filtered('startedAt <= $0 and endedAt >= $0 and _id != $1', endedAt, editRoutine._id)
+        .filtered(
+          `startedAt <= $0 and endedAt >= $0 and _id != $1 and ${query}`,
+          endedAt,
+          editRoutine._id,
+        )
         .isEmpty()
     ) {
       Alert.alert('', '編集した時間帯にすでにルーティーンが存在しています', [
@@ -166,6 +180,7 @@ const SettingRoutine = () => {
                           setRoutineColor(item.color);
                           setStartedAt(item.startedAt);
                           setEndedAt(item.endedAt);
+                          setEditType('routine');
                           setVisible(true);
                         }}
                       >
@@ -239,6 +254,7 @@ const SettingRoutine = () => {
                           setRoutineColor(item.color);
                           setStartedAt(item.startedAt);
                           setEndedAt(item.endedAt);
+                          setEditType('record');
                           setVisible(true);
                         }}
                       >
