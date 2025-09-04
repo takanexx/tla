@@ -1,6 +1,6 @@
 import Banner from '@/components/Banner';
 import TextInputAccessory from '@/components/ui/TextIputAccesory';
-import { ChartColors, Colors } from '@/constants/Colors';
+import { ChartColors, Colors, DefaultChartColor } from '@/constants/Colors';
 import { getDayOfWeekStr } from '@/constants/date';
 import { convertCycleStr } from '@/lib/realModel';
 import { Record, Routine, User } from '@/lib/realmSchema';
@@ -38,7 +38,7 @@ const SettingRoutine = () => {
   const { colors } = useTheme();
   const { isDark } = useThemeContext();
   const [title, setTitle] = useState('');
-  const [routineColor, setRoutineColor] = useState('red');
+  const [routineColor, setRoutineColor] = useState(DefaultChartColor);
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [visible, setVisible] = useState(false);
@@ -206,7 +206,7 @@ const SettingRoutine = () => {
     setModalType('add');
     // 値を初期化
     setTitle('');
-    setRoutineColor('red');
+    setRoutineColor(DefaultChartColor);
     setEndedAt(new Date());
     setStartedAt(new Date());
     setEditRoutine(null);

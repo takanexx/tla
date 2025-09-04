@@ -1,6 +1,6 @@
 import Banner from '@/components/Banner';
 import TextInputAccessory from '@/components/ui/TextIputAccesory';
-import { ChartColors, Colors } from '@/constants/Colors';
+import { ChartColors, Colors, DefaultChartColor } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,7 +36,7 @@ const SettingRoutine = () => {
   const { isDark } = useThemeContext();
   const [today, setToday] = useState(new Date());
   const [title, setTitle] = useState('');
-  const [routineColor, setRoutineColor] = useState('red');
+  const [routineColor, setRoutineColor] = useState(DefaultChartColor);
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [visible, setVisible] = useState(false);
@@ -104,7 +104,7 @@ const SettingRoutine = () => {
     setVisible(false);
     // 値を初期化
     setTitle('');
-    setRoutineColor('red');
+    setRoutineColor(DefaultChartColor);
     setEndedAt(new Date());
     setStartedAt(new Date());
     setEditRoutine(null);
