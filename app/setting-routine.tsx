@@ -171,16 +171,53 @@ const SettingRoutine = () => {
     if (!validate()) return;
 
     // すでに同じ時間帯にルーティーンが存在している場合はアラートを表示して終了
-    if (
-      !realm.objects(Routine).filtered('startedAt <= $0 and endedAt >= $0', startedAt).isEmpty() ||
-      !realm.objects(Routine).filtered('startedAt <= $0 and endedAt >= $0', endedAt).isEmpty()
-    ) {
-      Alert.alert('', '追加しようとしている時間帯にすでにルーティーンが存在しています', [
-        { text: 'OK', style: 'default' },
-      ]);
-      return;
+    const existedRoutine = realm.objects(Routine);
+
+    // 既存ルーティンの中で、開始時間と終了時間が今回追加しようとしているルーティンの時間帯に被っているものを抽出
+    if (!existedRoutine.isEmpty()) {
+      const overlappedRoutine = existedRoutine.find((element: Routine) => {
+        const startHour = startedAt.getHours();
+        const endHour = endedAt.getHours();
+
+        if (element.startedAt.getHours() <= startHour && element.endedAt.getHours() >= startHour) {
+          // 開始時間の前後が被っている場合
+          if (element.endedAt.getHours() === startHour) {
+            // 開始時間の分まで考慮する
+            if (element.endedAt.getMinutes() >= startedAt.getMinutes()) {
+              // 開始時間の分数が既存のルーティンの終了時間の分数より大きい場合は被っている
+              return true;
+            } else {
+              return false;
+            }
+          }
+          return true;
+        } else if (
+          element.startedAt.getHours() <= endHour &&
+          element.endedAt.getHours() >= endHour
+        ) {
+          // 終了時間の前後が被っている場合
+          if (element.startedAt.getHours() === endHour) {
+            // 終了時間の分まで考慮する
+            if (element.startedAt.getMinutes() <= endedAt.getMinutes()) {
+              return true; // 終了時間の分数が既存のルーティンの開始時間の分数より大きい場合は被っている
+            } else {
+              return false;
+            }
+          }
+        }
+      });
+
+      if (overlappedRoutine) {
+        Alert.alert(
+          '',
+          `追加しようとしている時間帯にすでに【${overlappedRoutine.title}】が存在しています`,
+          [{ text: 'OK', style: 'default' }],
+        );
+        return;
+      }
     }
 
+    // ルーティーンを追加
     const routine: Routine = realm.write(() =>
       realm.create(
         'Routine',
@@ -210,20 +247,49 @@ const SettingRoutine = () => {
     if (!validate()) return;
 
     // すでに同じ時間帯にルーティーンが存在している場合はアラートを表示して終了
-    if (
-      !realm
-        .objects(Routine)
-        .filtered('startedAt <= $0 and endedAt >= $0 and _id != $1', startedAt, editRoutine._id)
-        .isEmpty() ||
-      !realm
-        .objects(Routine)
-        .filtered('startedAt <= $0 and endedAt >= $0 and _id != $1', endedAt, editRoutine._id)
-        .isEmpty()
-    ) {
-      Alert.alert('', '編集した時間帯にすでにルーティーンが存在しています', [
-        { text: 'OK', style: 'default' },
-      ]);
-      return;
+    // 自分自身は除外する
+    const existedRoutine = realm.objects(Routine).filtered('_id != $0', editRoutine._id);
+
+    // 既存ルーティンの中で、開始時間と終了時間が今回追加しようとしているルーティンの時間帯に被っているものを抽出
+    if (!existedRoutine.isEmpty()) {
+      const overlappedRoutine = existedRoutine.find((element: Routine) => {
+        const startHour = startedAt.getHours();
+        const endHour = endedAt.getHours();
+
+        if (element.startedAt.getHours() <= startHour && element.endedAt.getHours() >= startHour) {
+          // 開始時間の前後が被っている場合
+          if (element.endedAt.getHours() === startHour) {
+            // 開始時間の分まで考慮する
+            if (element.endedAt.getMinutes() >= startedAt.getMinutes()) {
+              // 開始時間の分数が既存のルーティンの終了時間の分数より大きい場合は被っている
+              return true;
+            } else {
+              return false;
+            }
+          }
+          return true;
+        } else if (
+          element.startedAt.getHours() <= endHour &&
+          element.endedAt.getHours() >= endHour
+        ) {
+          // 終了時間の前後が被っている場合
+          if (element.startedAt.getHours() === endHour) {
+            // 終了時間の分まで考慮する
+            if (element.startedAt.getMinutes() <= endedAt.getMinutes()) {
+              return true; // 終了時間の分数が既存のルーティンの開始時間の分数より大きい場合は被っている
+            } else {
+              return false;
+            }
+          }
+        }
+      });
+
+      if (overlappedRoutine) {
+        Alert.alert('', `編集した時間帯にすでに【${overlappedRoutine.title}】が存在しています`, [
+          { text: 'OK', style: 'default' },
+        ]);
+        return;
+      }
     }
 
     realm.write(() => {
@@ -441,7 +507,11 @@ const SettingRoutine = () => {
                       borderBottomRightRadius: 0,
                       marginRight: 0,
                     }}
-                    onPress={() => setCycle('everyday')}
+                    onPress={() => {
+                      setCycle('everyday');
+                      // 曜日指定の値をクリア
+                      setCycleValue([]);
+                    }}
                   >
                     <Text
                       style={{ fontSize: 18, color: cycle === 'everyday' ? '#fff' : colors.text }}

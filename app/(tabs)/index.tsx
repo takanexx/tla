@@ -2,7 +2,7 @@ import Banner from '@/components/Banner';
 import SvgPieChart, { ChartDataType } from '@/components/SvgPieChart';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import TextInputAccessory from '@/components/ui/TextIputAccesory';
-import { ChartColors, Colors, getRateColor } from '@/constants/Colors';
+import { ChartColors, Colors, DefaultChartColor, getRateColor } from '@/constants/Colors';
 import { Record, Routine, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
@@ -241,7 +241,7 @@ export default function HomeScreen() {
   const [startedAd, setStartedAd] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [isError, setIsError] = useState(false);
-  const [routineColor, setRoutineColor] = useState('red');
+  const [routineColor, setRoutineColor] = useState(DefaultChartColor);
 
   const onPressFunction = () => {
     setVisible(true);
@@ -252,7 +252,7 @@ export default function HomeScreen() {
     setTitle('');
     setStartedAd(new Date());
     setEndedAt(new Date());
-    setRoutineColor('red');
+    setRoutineColor(DefaultChartColor);
     setVisible(false);
   };
 

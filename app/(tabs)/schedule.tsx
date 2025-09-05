@@ -1,7 +1,7 @@
 import Banner from '@/components/Banner';
 import FloatingActionButton from '@/components/ui/FloatingActionButton';
 import TextInputAccessory from '@/components/ui/TextIputAccesory';
-import { ChartColors, Colors, getRateColor } from '@/constants/Colors';
+import { ChartColors, Colors, DefaultChartColor, getRateColor } from '@/constants/Colors';
 import { Record, User } from '@/lib/realmSchema';
 import { useThemeContext } from '@/Themecontext';
 import { Ionicons } from '@expo/vector-icons';
@@ -42,7 +42,7 @@ export default function ScheduleScreen() {
   const [startedAt, setStartedAt] = useState(new Date());
   const [endedAt, setEndedAt] = useState(new Date());
   const [editRecord, setEditRecord] = useState<Record | null>(null);
-  const [routineColor, setRoutineColor] = useState('red');
+  const [routineColor, setRoutineColor] = useState(DefaultChartColor);
   const [date, setDate] = useState(new Date(selected));
 
   const users = useQuery(User);
@@ -100,7 +100,7 @@ export default function ScheduleScreen() {
     setEditRecord(null);
     setVisibleAddModal(false);
     setDate(new Date(selected));
-    setRoutineColor('red');
+    setRoutineColor(DefaultChartColor);
   };
 
   let markedDates: { [date: string]: { marked: boolean; dotColor: string } } = {};
