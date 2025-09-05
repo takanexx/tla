@@ -50,8 +50,127 @@ const SettingRoutine = () => {
 
   const routines = useQuery(Routine).sorted('startedAt');
 
-  // ルーティンの作成処理
+  /**
+   * 今日からルーティーンをセットする
+   * @returns
+   */
+  const setRoutineFromToday = (routine: Routine) => {
+    // 今日のルーティンレコードを作成
+    const now = new Date();
+    // 日付指定のルーティンの場合
+    if (routine.cycle === 'dayofweek') {
+      const cycleValAry = routine.cycleValue.split(',');
+      // 今日の曜日が含まれていない場合はRecordは作成せず終了
+      if (!cycleValAry.includes(String(now.getDay()))) {
+        resetState();
+        return;
+      }
+    }
+
+    // 毎日、または曜日指定で今日の曜日が含まれている場合はレコードを作成
+    if (routine.startedAt.getHours() > routine.endedAt.getHours()) {
+      // 日付を跨ぐ場合（22時〜6時のようなルーティン）は、22時〜24時と0時〜6時のように分割して保存する
+      realm.write(() => {
+        realm.create(
+          'Record',
+          Record.generate({
+            userId: user._id.toString(),
+            routineId: routine._id.toString(),
+            title: routine.title,
+            color: routine.color,
+            date: new Date(),
+            startedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0),
+            endedAt: new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate(),
+              routine.endedAt.getHours(),
+              routine.endedAt.getMinutes(),
+            ),
+          }),
+        );
+      });
+
+      realm.write(() => {
+        realm.create(
+          'Record',
+          Record.generate({
+            userId: user._id.toString(),
+            routineId: routine._id.toString(),
+            title: routine.title,
+            color: routine.color,
+            date: new Date(),
+            startedAt: new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate(),
+              routine.startedAt.getHours(),
+              routine.startedAt.getMinutes(),
+            ),
+            endedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59),
+          }),
+        );
+      });
+    } else {
+      // 日付を跨がない場合
+      realm.write(() => {
+        realm.create(
+          'Record',
+          Record.generate({
+            userId: user._id.toString(),
+            routineId: routine._id.toString(),
+            title: routine.title,
+            color: routine.color,
+            date: new Date(),
+            startedAt: new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate(),
+              routine.startedAt.getHours(),
+              routine.startedAt.getMinutes(),
+            ),
+            endedAt: new Date(
+              now.getFullYear(),
+              now.getMonth(),
+              now.getDate(),
+              routine.endedAt.getHours(),
+              routine.endedAt.getMinutes(),
+            ),
+          }),
+        );
+      });
+    }
+  };
+
+  /**
+   * バリデーションチェック
+   * @returns {boolean} バリデーションチェック
+   */
+  const validate = (): boolean => {
+    if (title.trim() === '') {
+      Alert.alert('', 'ルーティーン名を入力してください', [{ text: 'OK', style: 'default' }]);
+      return false;
+    }
+    // 曜日指定のルーティーンで曜日が選択されていない場合はアラートを表示して終了
+    if (cycle === 'dayofweek' && cycleValue.length === 0) {
+      Alert.alert('', '曜日指定のルーティーンを追加する場合は、曜日を1つ以上選択してください', [
+        { text: 'OK', style: 'default' },
+      ]);
+      return false;
+    }
+
+    return true;
+  };
+
+  /**
+   * ルーティーンの追加処理
+   * @returns {void}
+   */
   const createRoutine = () => {
+    // バリデーションチェック
+    if (!validate()) return;
+
+    // すでに同じ時間帯にルーティーンが存在している場合はアラートを表示して終了
     if (
       !realm.objects(Routine).filtered('startedAt <= $0 and endedAt >= $0', startedAt).isEmpty() ||
       !realm.objects(Routine).filtered('startedAt <= $0 and endedAt >= $0', endedAt).isEmpty()
@@ -79,99 +198,18 @@ const SettingRoutine = () => {
 
     // 「今日から」フラグが立っている場合
     if (fromToday) {
-      // 今日のルーティンレコードを作成
-      const now = new Date();
-      // 日付指定のルーティンの場合
-      if (routine.cycle === 'dayofweek') {
-        const cycleValAry = routine.cycleValue.split(',');
-        // 今日の曜日が含まれていない場合はRecordは作成せず終了
-        if (!cycleValAry.includes(String(now.getDay()))) {
-          resetState();
-          return;
-        }
-      }
-
-      // 毎日、または曜日指定で今日の曜日が含まれている場合はレコードを作成
-      if (routine.startedAt.getHours() > routine.endedAt.getHours()) {
-        // 日付を跨ぐ場合（22時〜6時のようなルーティン）は、22時〜24時と0時〜6時のように分割して保存する
-        realm.write(() => {
-          realm.create(
-            'Record',
-            Record.generate({
-              userId: user._id.toString(),
-              routineId: routine._id.toString(),
-              title: routine.title,
-              color: routine.color,
-              date: new Date(),
-              startedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0),
-              endedAt: new Date(
-                now.getFullYear(),
-                now.getMonth(),
-                now.getDate(),
-                routine.endedAt.getHours(),
-                routine.endedAt.getMinutes(),
-              ),
-            }),
-          );
-        });
-
-        realm.write(() => {
-          realm.create(
-            'Record',
-            Record.generate({
-              userId: user._id.toString(),
-              routineId: routine._id.toString(),
-              title: routine.title,
-              color: routine.color,
-              date: new Date(),
-              startedAt: new Date(
-                now.getFullYear(),
-                now.getMonth(),
-                now.getDate(),
-                routine.startedAt.getHours(),
-                routine.startedAt.getMinutes(),
-              ),
-              endedAt: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59),
-            }),
-          );
-        });
-      } else {
-        // 日付を跨がない場合
-        realm.write(() => {
-          realm.create(
-            'Record',
-            Record.generate({
-              userId: user._id.toString(),
-              routineId: routine._id.toString(),
-              title: routine.title,
-              color: routine.color,
-              date: new Date(),
-              startedAt: new Date(
-                now.getFullYear(),
-                now.getMonth(),
-                now.getDate(),
-                routine.startedAt.getHours(),
-                routine.startedAt.getMinutes(),
-              ),
-              endedAt: new Date(
-                now.getFullYear(),
-                now.getMonth(),
-                now.getDate(),
-                routine.endedAt.getHours(),
-                routine.endedAt.getMinutes(),
-              ),
-            }),
-          );
-        });
-      }
+      setRoutineFromToday(routine);
     }
+
     resetState();
   };
 
   // ルーティーンの編集処理
   const editRoutineHandler = () => {
     if (!editRoutine) return;
+    if (!validate()) return;
 
+    // すでに同じ時間帯にルーティーンが存在している場合はアラートを表示して終了
     if (
       !realm
         .objects(Routine)
@@ -196,6 +234,11 @@ const SettingRoutine = () => {
       editRoutine.startedAt = startedAt;
       editRoutine.endedAt = endedAt;
     });
+
+    // 「今日から」フラグが立っている場合
+    if (fromToday) {
+      setRoutineFromToday(editRoutine);
+    }
 
     resetState();
   };
