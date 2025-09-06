@@ -18,7 +18,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { BannerAdSize } from 'react-native-google-mobile-ads';
@@ -336,180 +335,157 @@ const SettingRoutine = () => {
         visible={visible}
         onRequestClose={() => resetState()}
       >
-        <TouchableWithoutFeedback onPress={() => resetState()}>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />
-        </TouchableWithoutFeedback>
-        <View
-          style={{
-            height: 'auto',
+        <View style={{ alignItems: 'flex-end', backgroundColor: colors.card }}>
+          <Ionicons
+            name="close-circle-outline"
+            size={26}
+            color={'gray'}
+            style={{ padding: 10 }}
+            onPress={() => {
+              resetState();
+            }}
+          />
+        </View>
+        <ScrollView
+          contentContainerStyle={{
             backgroundColor: colors.card,
-            marginTop: 'auto',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            paddingBottom: 40,
+            padding: 20,
+            paddingBottom: 50,
           }}
         >
-          <View
-            style={{
-              alignItems: 'flex-end',
-              padding: 10,
-              paddingBottom: 0,
-            }}
-          >
-            <TouchableOpacity onPress={() => resetState()}>
-              <Ionicons name="close-circle-outline" size={26} color="gray" />
-            </TouchableOpacity>
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
+              ルーティーン名
+            </Text>
+            <TextInput
+              placeholder="ルーティーンの名前を入力"
+              style={{
+                borderWidth: 1,
+                borderColor: 'lightgray',
+                borderRadius: 10,
+                padding: 10,
+                fontSize: 16,
+                color: colors.text,
+              }}
+              inputAccessoryViewID={'routineName'}
+              value={title}
+              onChangeText={text => setTitle(text)}
+            />
+            <TextInputAccessory accessoryId={'routineName'} />
           </View>
-          <ScrollView
-            contentContainerStyle={{
-              backgroundColor: colors.card,
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingHorizontal: 30,
-              paddingVertical: 20,
-              paddingBottom: 50,
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 10 }}>
+              {ChartColors.map((color, i) => {
+                return (
+                  <TouchableOpacity
+                    key={`color_${i}`}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      backgroundColor: color,
+                      marginHorizontal: 10,
+                      borderColor: Colors.light.tint,
+                      borderWidth: color === routineColor ? 5 : 0,
+                      borderRadius: 10,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => setRoutineColor(color)}
+                  >
+                    {color === routineColor && (
+                      <Ionicons name="checkmark" size={28} color={Colors.light.tint} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+          <View style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>時間</Text>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <DateTimePicker
+                themeVariant={isDark ? 'dark' : 'light'}
+                value={startedAt}
+                mode="time"
+                display="spinner"
+                style={{ flex: 1, marginRight: 10 }}
+                onChange={(event, date) => {
+                  if (!date) return;
+                  setStartedAt(date);
+                }}
+              />
+              <Text style={{ color: colors.text }}>〜</Text>
+              <DateTimePicker
+                themeVariant={isDark ? 'dark' : 'light'}
+                value={endedAt}
+                mode="time"
+                display="spinner"
+                style={{ flex: 1, marginLeft: 10 }}
+                onChange={(event, date) => {
+                  if (!date) return;
+                  setEndedAt(date);
+                }}
+              />
+            </View>
+          </View>
+          <TouchableOpacity
+            style={{
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              borderRadius: 10,
+              backgroundColor: Colors.light.tint,
+              marginTop: 30,
+            }}
+            onPress={() => {
+              editRoutineHandler();
             }}
           >
-            <View style={{ width: '100%' }}>
-              <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>
-                  ルーティーン名
-                </Text>
-                <TextInput
-                  placeholder="ルーティーンの名前を入力"
-                  style={{
-                    borderWidth: 1,
-                    borderColor: 'lightgray',
-                    borderRadius: 10,
-                    padding: 10,
-                    fontSize: 16,
-                    color: colors.text,
-                  }}
-                  inputAccessoryViewID={'routineName'}
-                  value={title}
-                  onChangeText={text => setTitle(text)}
-                />
-                <TextInputAccessory accessoryId={'routineName'} />
-              </View>
-              <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>カラー</Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', paddingTop: 10 }}>
-                  {ChartColors.map((color, i) => {
-                    return (
-                      <TouchableOpacity
-                        key={`color_${i}`}
-                        style={{
-                          width: 40,
-                          height: 40,
-                          backgroundColor: color,
-                          marginHorizontal: 10,
-                          borderColor: Colors.light.tint,
-                          borderWidth: color === routineColor ? 5 : 0,
-                          borderRadius: 10,
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        onPress={() => setRoutineColor(color)}
-                      >
-                        {color === routineColor && (
-                          <Ionicons name="checkmark" size={28} color={Colors.light.tint} />
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-              <View style={{ marginBottom: 20 }}>
-                <Text style={{ fontSize: 16, paddingBottom: 5, color: colors.text }}>時間</Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}
-                >
-                  <DateTimePicker
-                    themeVariant={isDark ? 'dark' : 'light'}
-                    value={startedAt}
-                    mode="time"
-                    display="spinner"
-                    style={{ flex: 1, marginRight: 10 }}
-                    onChange={(event, date) => {
-                      if (!date) return;
-                      setStartedAt(date);
-                    }}
-                  />
-                  <Text style={{ color: colors.text }}>〜</Text>
-                  <DateTimePicker
-                    themeVariant={isDark ? 'dark' : 'light'}
-                    value={endedAt}
-                    mode="time"
-                    display="spinner"
-                    style={{ flex: 1, marginLeft: 10 }}
-                    onChange={(event, date) => {
-                      if (!date) return;
-                      setEndedAt(date);
-                    }}
-                  />
-                </View>
-              </View>
-              <TouchableOpacity
-                style={{
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 10,
-                  backgroundColor: Colors.light.tint,
-                  marginTop: 30,
-                }}
-                onPress={() => {
-                  editRoutineHandler();
-                }}
-              >
-                <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
-                  保存する
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={{
-                  top: 0,
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 10,
-                  borderColor: 'red',
-                  borderWidth: 1,
-                  marginTop: 30,
-                }}
-                onPress={() => {
-                  Alert.alert(
-                    'データを削除しますか？',
-                    '削除したデータは復元できません。',
-                    [
-                      {
-                        text: 'キャンセル',
-                        style: 'cancel',
-                      },
-                      {
-                        text: '削除',
-                        style: 'destructive',
-                        onPress: () => {
-                          realm.write(() => {
-                            realm.delete(editRoutine);
-                          });
-                          resetState();
-                        },
-                      },
-                    ],
-                    { cancelable: false },
-                  );
-                }}
-              >
-                <Text style={{ fontWeight: 'bold', color: 'red', textAlign: 'center' }}>
-                  削除する
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </View>
+            <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>保存する</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              top: 0,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              borderRadius: 10,
+              borderColor: 'red',
+              borderWidth: 1,
+              marginTop: 30,
+            }}
+            onPress={() => {
+              Alert.alert(
+                'データを削除しますか？',
+                '削除したデータは復元できません。',
+                [
+                  {
+                    text: 'キャンセル',
+                    style: 'cancel',
+                  },
+                  {
+                    text: '削除',
+                    style: 'destructive',
+                    onPress: () => {
+                      realm.write(() => {
+                        realm.delete(editRoutine);
+                      });
+                      resetState();
+                    },
+                  },
+                ],
+                { cancelable: false },
+              );
+            }}
+          >
+            <Text style={{ fontWeight: 'bold', color: 'red', textAlign: 'center' }}>削除する</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </Modal>
     </>
   );
