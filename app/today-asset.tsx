@@ -209,7 +209,7 @@ const SettingRoutine = () => {
                   <View
                     style={{
                       ...styles.sectionListItemView,
-                      borderBottomWidth: routines.length === index + 1 ? 0 : 1,
+                      borderBottomWidth: records.length === index + 1 ? 0 : 1,
                       borderBottomColor: colors.border,
                     }}
                   >

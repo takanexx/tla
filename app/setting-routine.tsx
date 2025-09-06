@@ -204,6 +204,12 @@ const SettingRoutine = () => {
               return false;
             }
           }
+        } else if (
+          element.startedAt.getHours() >= startHour &&
+          element.endedAt.getHours() <= endHour
+        ) {
+          // 完全に被っている場合
+          return true;
         }
       });
 
@@ -281,6 +287,12 @@ const SettingRoutine = () => {
               return false;
             }
           }
+        } else if (
+          element.startedAt.getHours() >= startHour &&
+          element.endedAt.getHours() <= endHour
+        ) {
+          // 完全に被っている場合
+          return true;
         }
       });
 
