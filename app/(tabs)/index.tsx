@@ -301,7 +301,7 @@ export default function HomeScreen() {
         if (r.startedAt.getHours() <= startHour && r.endedAt.getHours() >= startHour) {
           // 開始時間の前後が被っている場合
           if (r.endedAt.getHours() === startHour) {
-            // 開始時間の分まで協力する
+            // 開始時間の分までチェックする
             if (r.endedAt.getMinutes() >= startedAd.getMinutes()) {
               // 開始時間の分数が既存のルーティンの終了時間の分数より大きい場合は被っている
               return true;
@@ -313,7 +313,7 @@ export default function HomeScreen() {
         } else if (r.startedAt.getHours() <= endHour && r.endedAt.getHours() >= endHour) {
           // 終了時間の前後が被っている場合
           if (r.startedAt.getHours() === endHour) {
-            // 終了時間の分まで協力する
+            // 終了時間の分までチェックする
             if (r.startedAt.getMinutes() <= endedAt.getMinutes()) {
               // 終了時間の分数が既存のルーティンの開始時間の分数より大きい場合は被っている
               return true;
@@ -321,6 +321,7 @@ export default function HomeScreen() {
               return false;
             }
           }
+          return true;
         }
       });
 

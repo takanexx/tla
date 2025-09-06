@@ -65,28 +65,87 @@ const SettingRoutine = () => {
       query = 'routineId == null';
     }
 
-    if (
-      !realm
-        .objects(Record)
-        .filtered(
-          `startedAt <= $0 and endedAt >= $0 and _id != $1 and ${query}`,
-          startedAt,
-          editRoutine._id,
-        )
-        .isEmpty() ||
-      !realm
+    // 開始時間が被っているものを抽出
+    let existsTodayRecords = realm
+      .objects(Record)
+      .filtered(
+        `startedAt <= $0 and endedAt >= $0 and _id != $1 and ${query}`,
+        startedAt,
+        editRoutine._id,
+      );
+
+    if (existsTodayRecords.isEmpty()) {
+      // 開始時間で被っているレコードがなければ終了時間が被っているものを抽出
+      existsTodayRecords = realm
         .objects(Record)
         .filtered(
           `startedAt <= $0 and endedAt >= $0 and _id != $1 and ${query}`,
           endedAt,
           editRoutine._id,
-        )
-        .isEmpty()
-    ) {
-      Alert.alert('', '編集した時間帯にすでにルーティーンが存在しています', [
-        { text: 'OK', style: 'default' },
-      ]);
-      return;
+        );
+    }
+
+    if (existsTodayRecords.isEmpty()) {
+      // 上記でもない場合は開始時間と終了時間の間に被っているものを抽出
+      existsTodayRecords = realm
+        .objects(Record)
+        .filtered(
+          `startedAt >= $0 and endedAt <= $1 and _id != $2 and ${query}`,
+          startedAt,
+          endedAt,
+          editRoutine._id,
+        );
+      if (!existsTodayRecords.isEmpty()) {
+        // 完全に被っている場合は、1件目を取得しここでアラートを表示して終了
+        // NOTE: 後続の処理の分数チェックでは対応できないためここでチェックする
+        const overlappedRecord = existsTodayRecords[0];
+        Alert.alert('', `編集した時間帯にすでに【${overlappedRecord.title}】が存在しています`, [
+          { text: 'OK', style: 'default' },
+        ]);
+        return;
+      }
+    }
+
+    // 既存レコードの中で、開始時間と終了時間が今回追加しようとしているレコードの時間帯に被っているものを抽出
+    // NOTE: 開始時間、または終了時間が被っている場合の分数チェック
+    if (!existsTodayRecords.isEmpty()) {
+      const overlappedRecord = existsTodayRecords.find(r => {
+        const startHour = startedAt.getHours();
+        const endHour = endedAt.getHours();
+
+        if (r.startedAt.getHours() <= startHour && r.endedAt.getHours() >= startHour) {
+          // 開始時間の前後が被っている場合
+          if (r.endedAt.getHours() === startHour) {
+            // 開始時間の分までチェック
+            if (r.endedAt.getMinutes() >= startedAt.getMinutes()) {
+              return true;
+            } else {
+              return false;
+            }
+          }
+          return true;
+        } else if (r.startedAt.getHours() <= endHour && r.endedAt.getHours() >= endHour) {
+          // 終了時間の前後が被っている場合
+          if (r.startedAt.getHours() === endHour) {
+            // 終了時間の分までチェック
+            if (r.startedAt.getMinutes() <= endedAt.getMinutes()) {
+              return true;
+            } else {
+              return false;
+            }
+          }
+          return true;
+        }
+      });
+
+      if (overlappedRecord) {
+        Alert.alert(
+          '',
+          `編集した時間帯にすでに【${existsTodayRecords[0].title}】が存在しています`,
+          [{ text: 'OK', style: 'default' }],
+        );
+        return;
+      }
     }
 
     realm.write(() => {

@@ -204,6 +204,7 @@ const SettingRoutine = () => {
               return false;
             }
           }
+          return true;
         } else if (
           element.startedAt.getHours() >= startHour &&
           element.endedAt.getHours() <= endHour
@@ -287,6 +288,7 @@ const SettingRoutine = () => {
               return false;
             }
           }
+          return true;
         } else if (
           element.startedAt.getHours() >= startHour &&
           element.endedAt.getHours() <= endHour
